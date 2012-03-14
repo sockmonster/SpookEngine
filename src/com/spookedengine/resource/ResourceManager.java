@@ -8,7 +8,7 @@ import java.util.Collection;
 import java.util.HashMap;
 
 /**
- *
+ * Resource Manager
  * @author Oliver Winks
  */
 public class ResourceManager {
