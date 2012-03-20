@@ -1,8 +1,9 @@
 package com.spookengine.scenegraph.appearance;
 
-//import android.graphics.Bitmap;
 import com.spookengine.events.Task;
 import com.spookengine.events.TaskScheduler;
+import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,18 +32,6 @@ public class AnimTexture extends Texture {
     public int[] getTexturePointer() {
         return frames[currFrame].getTexturePointer();
     }
-
-//    @Override
-//    public void setBitmap(Bitmap[] bitmaps) {
-//        // do nothing
-//        logger.log(Level.WARNING, "Cannot set a bitmap on an animated texture. " +
-//                "Try getting the current texture and setting it's bitmap.");
-//    }
-//    
-//    @Override
-//    public Bitmap[] getBitmaps() {
-//        return frames[currFrame].getBitmaps();
-//    }
     
     @Override
     public int getWidth(int img) {
@@ -52,6 +41,46 @@ public class AnimTexture extends Texture {
     @Override
     public int getHeight(int img) {
         return frames[currFrame].getHeight(img);
+    }
+    
+    @Override
+    public void setBitmaps(List<ByteBuffer> bitmaps) {
+        // do nothing
+        logger.log(Level.WARNING, "Cannot set bitmaps on an animated texture. " +
+                "Try getting the current texture and setting it's bitmaps.");
+    }
+    
+    @Override
+    public void setBitmap(int i, ByteBuffer bitmap) {
+        // do nothing
+        logger.log(Level.WARNING, "Cannot set a bitmap on an animated texture. " +
+                "Try getting the current texture and setting it's bitmap.");
+    }
+    
+    @Override
+    public void addBitmap(ByteBuffer bitmap) {
+        // do nothing
+        logger.log(Level.WARNING, "Cannot add a bitmap on an animated texture. " +
+                "Try getting the current texture and adding to it's bitmap data.");
+    }
+    
+    @Override
+    public ByteBuffer removeBitmap(int i) {
+        // do nothing
+        logger.log(Level.WARNING, "Cannot remove a bitmap from an animated texture. " +
+                "Try getting the current texture and removing the bitmap from that.");
+        
+        return null;
+    }
+    
+    @Override
+    public List<ByteBuffer> getBitmaps() {
+        return frames[currFrame].getBitmaps();
+    }
+    
+    @Override
+    public ByteBuffer getBitmap(int i) {
+        return frames[currFrame].getBitmap(i);
     }
 
     @Override

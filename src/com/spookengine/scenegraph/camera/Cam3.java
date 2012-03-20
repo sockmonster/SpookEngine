@@ -1,8 +1,8 @@
 package com.spookengine.scenegraph.camera;
 
-import com.spookengine.math.FastMath;
-import com.spookengine.math.Plane;
-import com.spookengine.math.Vec3;
+import com.spookengine.maths.FastMath;
+import com.spookengine.maths.Plane;
+import com.spookengine.maths.Vec3;
 import com.spookengine.scenegraph.collision.BoundingSphere;
 import com.spookengine.scenegraph.collision.BoundingVolume;
 

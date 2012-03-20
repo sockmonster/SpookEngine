@@ -1,6 +1,10 @@
 package com.spookengine.scenegraph;
 
-import com.spookengine.math.*;
+import com.spookengine.maths.Vec2;
+import com.spookengine.maths.Mat3;
+import com.spookengine.maths.FastMath;
+import com.spookengine.maths.Mat2;
+import com.spookengine.maths.Vec;
 
 /**
  *

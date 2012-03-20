@@ -1,7 +1,7 @@
 package com.spookengine.scenegraph.camera;
 
-import com.spookengine.math.FastMath;
-import com.spookengine.math.Vec2;
+import com.spookengine.maths.FastMath;
+import com.spookengine.maths.Vec2;
 import com.spookengine.scenegraph.collision.BoundingSphere;
 import com.spookengine.scenegraph.collision.BoundingVolume;
 import com.spookengine.scenegraph.renderer.Renderer;

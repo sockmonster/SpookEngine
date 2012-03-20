@@ -1,7 +1,8 @@
 package com.spookengine.scenegraph.appearance;
 
-//import android.graphics.Bitmap;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -9,15 +10,16 @@ import java.nio.ByteBuffer;
  */
 public class Texture {
 
-//    protected Bitmap[] bitmaps;
-    protected ByteBuffer[] imgData;
-    protected int[] imgWidth;
-    protected int[] imgHeight;
+    protected List<ByteBuffer> imgData;
+    protected List<Integer> imgWidth;
+    protected List<Integer> imgHeight;
     protected int[] texPtr;
     protected boolean hasAlpha;
 
     public Texture() {
-//        texPtr = null;
+        imgData = new ArrayList<ByteBuffer>();
+        imgWidth = new ArrayList<Integer>();
+        imgHeight = new ArrayList<Integer>();
         texPtr = new int[1];
     }
     
@@ -25,42 +27,45 @@ public class Texture {
         return texPtr;
     }
 
-    public void setData(ByteBuffer[] imgData) {
-        this.imgData = imgData;
-    }
-
-    public void setDimensions(int[] width, int[] height) {
+    public void setDimensions(List<Integer> width, List<Integer> height) {
         imgWidth = width;
         imgHeight = height;
     }
 
-    public ByteBuffer getData(int img) {
-        return imgData[img];
+    public int getWidth(int i) {
+        return imgWidth.get(i);
     }
 
-    public int getWidth(int img) {
-        return imgWidth[img];
+    public int getHeight(int i) {
+        return imgHeight.get(i);
+    }
+    
+    public void setBitmaps(List<ByteBuffer> bitmaps) {
+        imgData.clear();
+        imgData.addAll(bitmaps);
+    }
+    
+    public void setBitmap(int i, ByteBuffer bitmap) {
+        if(i>=0 && i<imgData.size()) {
+            imgData.set(i, bitmap);
+        }
+    }
+    
+    public void addBitmap(ByteBuffer bitmap) {
+        imgData.add(bitmap);
+    }
+    
+    public ByteBuffer removeBitmap(int i) {
+        return imgData.remove(i);
     }
 
-    public int getHeight(int img) {
-        return imgHeight[img];
+    public List<ByteBuffer> getBitmaps() {
+        return imgData;
     }
-
-//    public void setBitmap(Bitmap[] bitmaps) {
-//        this.bitmaps = bitmaps;
-//
-//        // check if any of the textures are transparent
-//        for(int i=0; i<bitmaps.length; i++) {
-//            if(bitmaps[0].hasAlpha()) {
-//                hasAlpha = true;
-//                break;
-//            }
-//        }
-//    }
-
-//    public Bitmap[] getBitmaps() {
-//        return bitmaps;
-//    }
+    
+    public ByteBuffer getBitmap(int i) {
+        return imgData.get(i);
+    }
 
     public boolean hasAlpha() {
         return hasAlpha;

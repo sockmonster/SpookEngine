@@ -1,6 +1,6 @@
 package com.spookengine.scenegraph.renderer;
 
-import com.spookengine.math.Vec3;
+import com.spookengine.maths.Vec3;
 import com.spookengine.scenegraph.*;
 import com.spookengine.scenegraph.camera.Cam;
 import com.spookengine.scenegraph.collision.BoundingVolume;

@@ -1,8 +1,8 @@
 package com.spookengine.scenegraph.collision;
 
-import com.spookengine.math.Vec;
-import com.spookengine.math.Vec2;
-import com.spookengine.math.Vec3;
+import com.spookengine.maths.Vec;
+import com.spookengine.maths.Vec2;
+import com.spookengine.maths.Vec3;
 import com.spookengine.scenegraph.Trfm;
 import java.nio.FloatBuffer;
 import java.util.List;

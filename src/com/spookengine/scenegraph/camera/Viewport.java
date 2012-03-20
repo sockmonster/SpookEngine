@@ -1,6 +1,6 @@
 package com.spookengine.scenegraph.camera;
 
-import com.spookengine.math.Vec2;
+import com.spookengine.maths.Vec2;
 
 /**
  *

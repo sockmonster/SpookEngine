@@ -1,7 +1,7 @@
 package com.spookengine.scenegraph;
 
-import com.spookengine.math.Mat;
-import com.spookengine.math.Vec;
+import com.spookengine.maths.Mat;
+import com.spookengine.maths.Vec;
 
 /**
  *

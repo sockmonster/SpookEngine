@@ -1,6 +1,6 @@
 package com.spookengine.scenegraph.lights;
 
-import com.spookengine.math.Vec3;
+import com.spookengine.maths.Vec3;
 import com.spookengine.scenegraph.Node;
 import com.spookengine.scenegraph.Spatial;
 import com.spookengine.scenegraph.Trfm3;
