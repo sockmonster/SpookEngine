@@ -72,10 +72,25 @@
 
     -->
     
-    <!-- package maths lib into a separate jar -->
     <target name="-post-jar">
+        <!-- delete standard jar -->
+        <delete file="${dist.jar}" />
+        
+        <!-- package maths lib into a separate jar -->
         <jar destfile="${dist.dir}/${application.title}-Maths.jar" 
             basedir="${build.classes.dir}" 
             includes="com/spookengine/maths/**"/>
+            
+        <!-- package android version -->
+        <jar destfile="${dist.dir}/${application.title}-Android.jar" 
+            basedir="${build.classes.dir}" 
+            excludes="com/spookengine/jogl/**"/>
+        
+        <!-- package jogl version -->
+        <jar destfile="${dist.dir}/${application.title}-Android.jar" 
+            basedir="${build.classes.dir}" 
+            excludes="com/spookengine/android/**"/>
     </target>
+    
+    
 </project>
