@@ -7,6 +7,7 @@ import com.spookengine.scenegraph.appearance.Alpha;
 import com.spookengine.scenegraph.appearance.Texture;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -50,7 +51,7 @@ public class ObjLoader {
         return instance;
     }
     
-    public Visual loadModel(String location, String filename) throws Exception {
+    public Visual loadModel(String location, String filename) throws IOException {
         logger.log(Level.INFO, "loading model");
         
         // add a trailing / if one doesn't already exist
@@ -248,7 +249,7 @@ public class ObjLoader {
         }
     }
     
-    protected void loadMTL(BufferedReader reader) throws Exception {
+    protected void loadMTL(BufferedReader reader) throws IOException {
         Material mat = null;
         StringBuilder strBuf = new StringBuilder();
 

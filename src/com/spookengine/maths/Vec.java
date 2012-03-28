@@ -13,7 +13,8 @@ public class Vec {
     }
 
     public Vec(float[] v) {
-        v = (float[]) v.clone();
+        this.v = new float[v.length];
+        System.arraycopy(v, 0, this.v, 0, v.length);
     }
 
     public Vec(Vec vec) {
@@ -28,8 +29,7 @@ public class Vec {
      * @return this vector.
      */
     public Vec setTo(Vec vec) {
-        for(int i=0; i<v.length; i++)
-            this.v[i] = v[i];
+        System.arraycopy(v, 0, this.v, 0, v.length);
 
         return this;
     }
@@ -43,8 +43,7 @@ public class Vec {
      * @return this vector.
      */
     public Vec setTo(float[] v) {
-        for(int i=0; i<v.length; i++)
-            this.v[i] = v[i];
+        System.arraycopy(v, 0, this.v, 0, v.length);
 
         return this;
     }
@@ -266,9 +265,8 @@ public class Vec {
      */
     public float dist(Vec vec) {
         float dist = 0;
-        float d = 0;
         for(int i=0; i<v.length; i++) {
-            d = v[i] - vec.v[i];
+            float d = v[i] - vec.v[i];
             dist += d*d;
         }
 
@@ -285,9 +283,8 @@ public class Vec {
      */
     public float dist(float[] v) {
         float dist = 0;
-        float d = 0;
         for(int i=0; i<v.length; i++) {
-            d = this.v[i] - v[i];
+            float d = this.v[i] - v[i];
             dist += d*d;
         }
 

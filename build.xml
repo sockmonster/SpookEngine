@@ -81,12 +81,12 @@
         <!-- package android version -->
         <jar destfile="${dist.dir}/${application.title}-Android.jar" 
             basedir="${build.classes.dir}" 
-            excludes="com/spookengine/desktop/**"/>
+            excludes="com/spookengine/desktop/**, com/spookengine/maths/**"/>
         
         <!-- package jogl version -->
         <jar destfile="${dist.dir}/${application.title}-JOGL.jar" 
             basedir="${build.classes.dir}" 
-            excludes="com/spookengine/mobile/**"/>
+            excludes="com/spookengine/mobile/**, com/spookengine/maths/**"/>
     </target>
     
     
