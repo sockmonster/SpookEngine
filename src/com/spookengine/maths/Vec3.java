@@ -17,6 +17,10 @@ public class Vec3 extends Vec {
         v[1] = y;
         v[2] = z;
     }
+    
+    public Vec3(float[] v) {
+        super(v);
+    }
 
     public Vec3(Vec vec) {
         super(vec);
@@ -38,6 +42,13 @@ public class Vec3 extends Vec {
     public Vec3 setTo(Vec vec) {
         return setTo(vec.v[0], vec.v[1], vec.v[2]);
     }
+    
+    @Override
+    public Vec3 setTo(float[] v) {
+        super.setTo(v);
+        
+        return this;
+    }
 
     public Vec3 setTo(float x, float y, float z) {
         this.v[0] = x;
@@ -51,6 +62,13 @@ public class Vec3 extends Vec {
     public Vec3 add(Vec vec) {
         return add(vec.v[0], vec.v[1], vec.v[2]);
     }
+    
+    @Override
+    public Vec3 add(float[] v) {
+        super.add(v);
+        
+        return this;
+    }
 
     public Vec3 add(float x, float y, float z) {
         this.v[0] += x;
@@ -63,6 +81,13 @@ public class Vec3 extends Vec {
     @Override
     public Vec3 sub(Vec vec) {
         return sub(vec.v[0], vec.v[1], vec.v[2]);
+    }
+    
+    @Override
+    public Vec3 sub(float[] v) {
+        super.sub(v);
+        
+        return this;
     }
 
     public Vec3 sub(float x, float y, float z) {
@@ -82,6 +107,13 @@ public class Vec3 extends Vec {
     public Vec3 mult(Vec vec) {
         return mult(vec.v[0], vec.v[1], vec.v[2]);
     }
+    
+    @Override
+    public Vec3 mult(float[] v) {
+        super.mult(v);
+        
+        return this;
+    }
 
     public Vec3 mult(float x, float y, float z) {
         v[0] *= x;
@@ -99,6 +131,13 @@ public class Vec3 extends Vec {
     @Override
     public Vec3 div(Vec vec) {
         return div(vec.v[0], vec.v[1], vec.v[2]);
+    }
+    
+    @Override
+    public Vec3 div(float[] v) {
+        super.div(v);
+        
+        return this;
     }
 
     public Vec3 div(float x, float y, float z) {
@@ -119,22 +158,25 @@ public class Vec3 extends Vec {
     }
 
     /**
-     * Calcultes the cross product between this Vec3 and the given Vec3
+     * Calculates the cross product between this Vec3 and the given Vec3
      * and stores the result in this Vec3.
      *
      * @param vec The Vec3 to perform the cross product calculation with.
      * @return The cross product between this Vec3 and the given Vec3.
      */
-    public Vec cross(Vec vec) {
-    	float nx = v[1]*vec.v[2] - v[2]*vec.v[1];
-    	float ny = v[2]*vec.v[0] - v[0]*vec.v[2];
-    	float nz = v[0]*vec.v[1] - v[1]*vec.v[0];
-
-    	v[0] = nx;
-    	v[1] = ny;
-    	v[2] = nz;
-
-        return this;
+    public Vec3 cross(Vec3 vec) {
+    	return cross(vec.v[0], vec.v[1], vec.v[2]);
+    }
+    
+    /**
+     * Calculates the cross product between this Vec3 and the given Vec3
+     * and stores the result in this Vec3.
+     *
+     * @param vec The Vec3 to perform the cross product calculation with.
+     * @return The cross product between this Vec3 and the given Vec3.
+     */
+    public Vec3 cross(float[] v) {
+        return cross(v[0], v[1], v[2]);
     }
 
     /**
@@ -146,7 +188,7 @@ public class Vec3 extends Vec {
      * @param z
      * @return cross product.
      */
-    public Vec cross(float x, float y, float z) {
+    public Vec3 cross(float x, float y, float z) {
         float nx = this.v[1]*z - this.v[2]*y;
     	float ny = this.v[2]*x - this.v[0]*z;
     	float nz = this.v[0]*y - this.v[1]*x;

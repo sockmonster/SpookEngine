@@ -73,9 +73,6 @@
     -->
     
     <target name="-post-jar">
-        <!-- delete standard jar -->
-        <delete file="${dist.jar}" />
-        
         <!-- package maths lib into a separate jar -->
         <jar destfile="${dist.dir}/${application.title}-Maths.jar" 
             basedir="${build.classes.dir}" 
@@ -84,12 +81,12 @@
         <!-- package android version -->
         <jar destfile="${dist.dir}/${application.title}-Android.jar" 
             basedir="${build.classes.dir}" 
-            excludes="com/spookengine/jogl/**"/>
+            excludes="com/spookengine/desktop/**"/>
         
         <!-- package jogl version -->
-        <jar destfile="${dist.dir}/${application.title}-Android.jar" 
+        <jar destfile="${dist.dir}/${application.title}-JOGL.jar" 
             basedir="${build.classes.dir}" 
-            excludes="com/spookengine/android/**"/>
+            excludes="com/spookengine/mobile/**"/>
     </target>
     
     

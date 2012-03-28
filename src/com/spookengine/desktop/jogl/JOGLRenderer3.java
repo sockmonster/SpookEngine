@@ -1,6 +1,5 @@
-package com.spookengine.jogl;
+package com.spookengine.desktop.jogl;
 
-import android.opengl.GLU;
 import static com.spookengine.scenegraph.App.*;
 import com.spookengine.scenegraph.*;
 import com.spookengine.scenegraph.appearance.PolyAtt.CullFace;
@@ -16,7 +15,8 @@ import java.nio.FloatBuffer;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.microedition.khronos.opengles.GL10;
+import javax.media.opengl.GL2;
+import javax.media.opengl.glu.GLU;
 
 /**
  *
@@ -26,21 +26,21 @@ public class JOGLRenderer3 extends Renderer {
     private static final Logger logger = Logger.getLogger(JOGLRenderer3.class.getName());
     private static JOGLRenderer3 instance;
     
-    private GL10 gl;
+    private GL2 gl;
+    private GLU glu;
 
     // render vars
     private static final int[] LIGHTS = new int[] {
-        GL10.GL_LIGHT0, GL10.GL_LIGHT1, GL10.GL_LIGHT2, GL10.GL_LIGHT3,
-        GL10.GL_LIGHT4, GL10.GL_LIGHT5, GL10.GL_LIGHT6, GL10.GL_LIGHT7
+        GL2.GL_LIGHT0, GL2.GL_LIGHT1, GL2.GL_LIGHT2, GL2.GL_LIGHT3,
+        GL2.GL_LIGHT4, GL2.GL_LIGHT5, GL2.GL_LIGHT6, GL2.GL_LIGHT7
     };
     private int activeLights;
     
     // convenience vars
     private float[] AT = new float[16];
     private float[] CAM_AT = new float[16];
-    private int[] intArrayType = new int[0];
     
-    public static JOGLRenderer3 getInstance(GL10 gl) {
+    public static JOGLRenderer3 getInstance(GL2 gl) {
         if(instance == null) {
             instance = new JOGLRenderer3();
             
@@ -49,6 +49,7 @@ public class JOGLRenderer3 extends Renderer {
         }
         
         instance.gl = gl;
+        instance.glu = new GLU();
         return instance;
     }
     
@@ -59,17 +60,17 @@ public class JOGLRenderer3 extends Renderer {
     @Override
     public void onSurfaceCreated() {
         // initialise OpenGL
-        gl.glShadeModel(GL10.GL_SMOOTH);
+        gl.glShadeModel(GL2.GL_SMOOTH);
         gl.glClearColor(clearColour.x(), clearColour.y(), clearColour.z(), 0.0f);
         
-        gl.glTexEnvf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_ENV_MODE, GL10.GL_MODULATE);
+        gl.glTexEnvf(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_MODULATE);
 
         // enable depth testing
         gl.glClearDepthf(1f);
-        gl.glEnable(GL10.GL_DEPTH_TEST);
-        gl.glDepthFunc(GL10.GL_LEQUAL);
+        gl.glEnable(GL2.GL_DEPTH_TEST);
+        gl.glDepthFunc(GL2.GL_LEQUAL);
 
-        gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_FASTEST);
+        gl.glHint(GL2.GL_PERSPECTIVE_CORRECTION_HINT, GL2.GL_FASTEST);
     }
     
     @Override
@@ -81,7 +82,7 @@ public class JOGLRenderer3 extends Renderer {
     
     @Override
     public void onDrawFrame(Spatial root, Cam cam) {
-        gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
+        gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
 
         // canvas changed?
         if(canvasChanged) {
@@ -103,9 +104,9 @@ public class JOGLRenderer3 extends Renderer {
         // projection matrix
         Cam3 cam3 = (Cam3) cam;
         if(camera != cam || cam3.frustumChanged) {
-            gl.glMatrixMode(GL10.GL_PROJECTION);
+            gl.glMatrixMode(GL2.GL_PROJECTION);
             gl.glLoadIdentity();
-            GLU.gluPerspective(gl,
+            glu.gluPerspective(
                     cam3.getFOV(),
                     cam3.getAspectRatio(),
                     cam3.getNearClip(),
@@ -116,7 +117,7 @@ public class JOGLRenderer3 extends Renderer {
         }
 
         // camera
-        gl.glMatrixMode(GL10.GL_MODELVIEW);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
         gl.glLoadIdentity();
 
         cam.getModelView().toOpenGL(CAM_AT);
@@ -157,8 +158,8 @@ public class JOGLRenderer3 extends Renderer {
             // TODO: sort the stack
 //            Collections.sort(deferredStack, depthComparator);
 
-            gl.glEnable(GL10.GL_BLEND);
-            gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+            gl.glEnable(GL2.GL_BLEND);
+            gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
             gl.glDepthMask(false);
 
             nNodes = deferredStack.size();
@@ -184,7 +185,7 @@ public class JOGLRenderer3 extends Renderer {
             }
 
             gl.glDepthMask(true);
-            gl.glDisable(GL10.GL_BLEND);
+            gl.glDisable(GL2.GL_BLEND);
         }
         
         canvasChanged = false;
@@ -194,36 +195,28 @@ public class JOGLRenderer3 extends Renderer {
 //        tex.texPtr = new int[1];
 
         // generate one texture pointer and bind it.
-//        gl.glGenTextures(1, tex.texPtr, 0);
-//        gl.glBindTexture(GL10.GL_TEXTURE_2D, tex.texPtr[0]);
         gl.glGenTextures(1, tex.getTexturePointer(), 0);
-        gl.glBindTexture(GL10.GL_TEXTURE_2D, tex.getTexturePointer()[0]);
+        gl.glBindTexture(GL2.GL_TEXTURE_2D, tex.getTexturePointer()[0]);
 
         // clamping or repeating
         // TODO: Note, OpenGL ES 1.0 does not support clamping without borders
-        gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_S, GL10.GL_REPEAT);
-        gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_T, GL10.GL_REPEAT);
+        gl.glTexParameterf(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_WRAP_S, GL2.GL_REPEAT);
+        gl.glTexParameterf(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_WRAP_T, GL2.GL_REPEAT);
         
-        //////////////////////////////////////////////////////////////////////////////////////////////////////
-        // TODO: BITMAPS IN SPOOKENGINE-CORE NEEDS TO REMOVE DEPENDANCY ON ANDROID BEFORE TEXTURES CAN WORK!!!
         // if more than one image is defined then use mipmapping
-        if(tex.getBitmaps().size() > 1) {
-            gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR);
-            gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST_MIPMAP_NEAREST);
+        if(tex.getBitmaps().length > 1) {
+            gl.glTexParameterf(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MAG_FILTER, GL2.GL_LINEAR);
+            gl.glTexParameterf(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MIN_FILTER, GL2.GL_NEAREST_MIPMAP_NEAREST);
         } else {
-            gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR);
-            gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST);
+            gl.glTexParameterf(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MAG_FILTER, GL2.GL_LINEAR);
+            gl.glTexParameterf(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MIN_FILTER, GL2.GL_NEAREST);
         }
         
         // TODO: THIS NEEDS TO BE LOOKED AT SO THAT MIPMAPPING WORKS!!!!
-        for(int i=0; i<tex.getBitmaps().size(); i++) {
-//            GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, tex.getBitmaps()[i], 0);
-            
-            // TODO: TO SLOW TO USE AT THE MO
-            gl.glTexImage2D(GL10.GL_TEXTURE_2D, i, GL10.GL_RGBA, tex.getWidth(i), tex.getHeight(i), 
-                    0, GL10.GL_RGBA, GL10.GL_UNSIGNED_BYTE, tex.getBitmap(i));
+        for(int i=0; i<tex.getBitmaps().length; i++) {
+            gl.glTexImage2D(GL2.GL_TEXTURE_2D, i, GL2.GL_RGBA, tex.getWidth(i), tex.getHeight(i), 
+                    0, GL2.GL_RGBA, GL2.GL_UNSIGNED_BYTE, tex.getBitmap(i));
         }
-        //////////////////////////////////////////////////////////////////////////////////////////////////////
     }
     
     private void enableApp(App3 app) {
@@ -235,7 +228,7 @@ public class JOGLRenderer3 extends Renderer {
         if((inheritance & POINT_ATT) != 0) {
             PointAtt pointAtt = app.getPointAtt();
             if(pointAtt.isAntiAliased)
-                gl.glEnable(GL10.GL_POINT_SMOOTH);
+                gl.glEnable(GL2.GL_POINT_SMOOTH);
 
             if(pointAtt.getPointSize() != 1)
                 gl.glPointSize(pointAtt.getPointSize());
@@ -247,7 +240,7 @@ public class JOGLRenderer3 extends Renderer {
         if((inheritance & LINE_ATT) != 0) {
             LineAtt lineAtt = app.getLineAtt();
             if(lineAtt.isAntiAliased)
-                gl.glEnable(GL10.GL_LINE_SMOOTH);
+                gl.glEnable(GL2.GL_LINE_SMOOTH);
 
             if(lineAtt.getLineWidth() != 1)
                 gl.glLineWidth(lineAtt.getLineWidth());
@@ -259,13 +252,13 @@ public class JOGLRenderer3 extends Renderer {
         if((inheritance & POLY_ATT) != 0) {
             PolyAtt polyAtt = app.getPolyAtt();
             if(polyAtt.cullFace != CullFace.NONE) {
-                gl.glEnable(GL10.GL_CULL_FACE);
+                gl.glEnable(GL2.GL_CULL_FACE);
                 switch(polyAtt.cullFace) {
                     case BACK:
-                        gl.glCullFace(GL10.GL_BACK);
+                        gl.glCullFace(GL2.GL_BACK);
                         break;
                     case FRONT:
-                        gl.glCullFace(GL10.GL_FRONT);
+                        gl.glCullFace(GL2.GL_FRONT);
                         break;
                 }
             }
@@ -285,11 +278,11 @@ public class JOGLRenderer3 extends Renderer {
         /* ******** ******** ******** */
         if((inheritance & MATERIAL) != 0) {
             Material material = app.getMaterial();
-            gl.glMaterialf(GL10.GL_FRONT_AND_BACK, GL10.GL_SHININESS, material.getShininess());
-            gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_AMBIENT, material.getAmbient(alpha));
-            gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_DIFFUSE, material.getDiffuse(alpha));
-            gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_SPECULAR, material.getSpecular(alpha));
-            gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_EMISSION, material.getEmissive(alpha));
+            gl.glMaterialf(GL2.GL_FRONT_AND_BACK, GL2.GL_SHININESS, material.getShininess());
+            gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_AMBIENT, material.getAmbient(alpha));
+            gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_DIFFUSE, material.getDiffuse(alpha));
+            gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_SPECULAR, material.getSpecular(alpha));
+            gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_EMISSION, material.getEmissive(alpha));
         } else if((inheritance & COLOUR) != 0) {
             // enable
             Colour colour = app.getColour();
@@ -308,20 +301,23 @@ public class JOGLRenderer3 extends Renderer {
         /* ******** ******** ******** */
         List<Texture> textures = app.getTextures();
         if(!textures.isEmpty()) {
-            gl.glEnable(GL10.GL_TEXTURE_2D);
+            gl.glEnable(GL2.GL_TEXTURE_2D);
 
             for(int i=0; i<textures.size(); i++) {
-//                if(app.textures.get(i).texPtr == null)
-                if(textures.get(i).getTexturePointer() == null)
+                if(!textures.get(i).texPtrGenerated) {
+                    logger.log(Level.INFO, "Generating texture pointer!");
                     generateTexturePointer(textures.get(i));
-
-//                gl.glBindTexture(GL_TEXTURE_2D, app.textures.get(0).texPtr[0]);
-                gl.glBindTexture(GL10.GL_TEXTURE_2D, textures.get(0).getTexturePointer()[0]);
+                    textures.get(i).texPtrGenerated = true;
+                }
+                
+                // clamping & repeating
+                
+                gl.glBindTexture(GL2.GL_TEXTURE_2D, textures.get(0).getTexturePointer()[0]);
 
                 if(textures.get(i).hasAlpha())
-                    gl.glTexEnvf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_ENV_MODE, GL10.GL_MODULATE);
+                    gl.glTexEnvf(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_MODULATE);
                 else
-                    gl.glTexEnvf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_ENV_MODE, GL10.GL_DECAL);
+                    gl.glTexEnvf(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_DECAL);
             }
         }
 
@@ -332,7 +328,7 @@ public class JOGLRenderer3 extends Renderer {
         List<Light> lights = app.getLights();
         int numOfLights = lights.size();
         if(numOfLights > 0) {
-            gl.glEnable(GL10.GL_LIGHTING);
+            gl.glEnable(GL2.GL_LIGHTING);
 
             // enable lights according to node's lighting policy
             int light;
@@ -369,37 +365,37 @@ public class JOGLRenderer3 extends Renderer {
             LightBulb lb = (LightBulb) light;
             if(lb.hasAmbience) {
                 gl.glEnable(LIGHTS[activeLights]);
-                gl.glLightfv(LIGHTS[activeLights], GL10.GL_AMBIENT, light.getColour(), 0);
+                gl.glLightfv(LIGHTS[activeLights], GL2.GL_AMBIENT, light.getColour(), 0);
             } else {
                 gl.glEnable(LIGHTS[activeLights]);
             }
 
-            gl.glLightf(LIGHTS[activeLights], GL10.GL_CONSTANT_ATTENUATION, lb.getConstAttenuation());
-            gl.glLightf(LIGHTS[activeLights], GL10.GL_LINEAR_ATTENUATION, lb.getLinearAttenuation());
-            gl.glLightf(LIGHTS[activeLights], GL10.GL_QUADRATIC_ATTENUATION, lb.getQuadAttenuation());
+            gl.glLightf(LIGHTS[activeLights], GL2.GL_CONSTANT_ATTENUATION, lb.getConstAttenuation());
+            gl.glLightf(LIGHTS[activeLights], GL2.GL_LINEAR_ATTENUATION, lb.getLinearAttenuation());
+            gl.glLightf(LIGHTS[activeLights], GL2.GL_QUADRATIC_ATTENUATION, lb.getQuadAttenuation());
 
-            gl.glLightfv(LIGHTS[activeLights], GL10.GL_DIFFUSE, light.getColour(), 0);
-            gl.glLightfv(LIGHTS[activeLights], GL10.GL_SPECULAR, light.getColour(), 0);
-            gl.glLightfv(LIGHTS[activeLights], GL10.GL_POSITION, new float[] {
+            gl.glLightfv(LIGHTS[activeLights], GL2.GL_DIFFUSE, light.getColour(), 0);
+            gl.glLightfv(LIGHTS[activeLights], GL2.GL_SPECULAR, light.getColour(), 0);
+            gl.glLightfv(LIGHTS[activeLights], GL2.GL_POSITION, new float[] {
                 lb.getPos().x(), lb.getPos().y(), lb.getPos().z(), 1}, 0);
 
             // SpotLight
             if(light instanceof SpotLight) {
                 SpotLight sl = (SpotLight) light;
 
-                gl.glLightf(LIGHTS[activeLights], GL10.GL_SPOT_CUTOFF, sl.getAngle());
-                gl.glLightf(LIGHTS[activeLights], GL10.GL_SPOT_EXPONENT, sl.getFoucs());
-                gl.glLightfv(LIGHTS[activeLights], GL10.GL_SPOT_DIRECTION, new float[] {
+                gl.glLightf(LIGHTS[activeLights], GL2.GL_SPOT_CUTOFF, sl.getAngle());
+                gl.glLightf(LIGHTS[activeLights], GL2.GL_SPOT_EXPONENT, sl.getFoucs());
+                gl.glLightfv(LIGHTS[activeLights], GL2.GL_SPOT_DIRECTION, new float[] {
                     sl.getDir().x(), sl.getDir().y(), sl.getDir().z()}, 0);
             }
         } else if(light instanceof Light) {
             gl.glEnable(LIGHTS[activeLights]);
-            gl.glLightfv(LIGHTS[activeLights], GL10.GL_AMBIENT, light.getColour(), 0);
+            gl.glLightfv(LIGHTS[activeLights], GL2.GL_AMBIENT, light.getColour(), 0);
 
             // Direction light
             if(light instanceof DirLight) {
                 DirLight dl = (DirLight) light;
-                gl.glLightfv(LIGHTS[activeLights], GL10.GL_POSITION, new float[] {
+                gl.glLightfv(LIGHTS[activeLights], GL2.GL_POSITION, new float[] {
                     dl.getDir().x(), dl.getDir().y(), dl.getDir().z(), 0}, 0);
             }
         }
@@ -414,7 +410,7 @@ public class JOGLRenderer3 extends Renderer {
         if((inheritance & POINT_ATT) != 0) {
             PointAtt pointAtt = app.getPointAtt();
             if(pointAtt.isAntiAliased)
-                gl.glDisable(GL10.GL_POINT_SMOOTH);
+                gl.glDisable(GL2.GL_POINT_SMOOTH);
 
             if(pointAtt.getPointSize() != 1)
                 gl.glPointSize(1f);
@@ -426,7 +422,7 @@ public class JOGLRenderer3 extends Renderer {
         if((inheritance & LINE_ATT) != 0) {
             LineAtt lineAtt = app.getLineAtt();
             if(lineAtt.isAntiAliased)
-                gl.glDisable(GL10.GL_LINE_SMOOTH);
+                gl.glDisable(GL2.GL_LINE_SMOOTH);
 
             if(lineAtt.getLineWidth() != 1)
                 gl.glLineWidth(1f);
@@ -438,7 +434,7 @@ public class JOGLRenderer3 extends Renderer {
         if((inheritance & POLY_ATT) != 0) {
             PolyAtt polyAtt = app.getPolyAtt();
             if(polyAtt.cullFace != CullFace.NONE)
-                gl.glDisable(GL10.GL_CULL_FACE);
+                gl.glDisable(GL2.GL_CULL_FACE);
         }
 
         /* ******** ******** ******** */
@@ -451,11 +447,11 @@ public class JOGLRenderer3 extends Renderer {
             Material.defaultSpecular.position(0);
             Material.defaultEmissive.position(0);
 
-            gl.glMaterialf(GL10.GL_FRONT_AND_BACK, GL10.GL_SHININESS, 0);
-            gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_AMBIENT, Material.defaultAmbient);
-            gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_DIFFUSE, Material.defaultDiffuse);
-            gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_SPECULAR, Material.defaultSpecular);
-            gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_EMISSION, Material.defaultEmissive);
+            gl.glMaterialf(GL2.GL_FRONT_AND_BACK, GL2.GL_SHININESS, 0);
+            gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_AMBIENT, Material.defaultAmbient);
+            gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_DIFFUSE, Material.defaultDiffuse);
+            gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_SPECULAR, Material.defaultSpecular);
+            gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_EMISSION, Material.defaultEmissive);
         } else if((inheritance & COLOUR) != 0) {
             gl.glColor4f(1, 1, 1, 1);
         }
@@ -465,7 +461,7 @@ public class JOGLRenderer3 extends Renderer {
         /* ******** ******** ******** */
         List<Texture> textures = app.getTextures();
         if(!textures.isEmpty()) {
-            gl.glDisable(GL10.GL_TEXTURE_2D);
+            gl.glDisable(GL2.GL_TEXTURE_2D);
         }
 
         /* ******** ******** ******** */
@@ -473,7 +469,7 @@ public class JOGLRenderer3 extends Renderer {
         /* ******** ******** ******** */
         for(int i=0; i<activeLights; i++)
             gl.glDisable(LIGHTS[i]);
-        gl.glDisable(GL10.GL_LIGHTING);
+        gl.glDisable(GL2.GL_LIGHTING);
     }
     
     private void render(Geom geom) {
@@ -482,49 +478,49 @@ public class JOGLRenderer3 extends Renderer {
         
         FloatBuffer norms = trimesh.getNormals();
         if(norms != null) {
-            gl.glEnableClientState(GL10.GL_NORMAL_ARRAY);
-            gl.glNormalPointer(GL10.GL_FLOAT, 0, norms);
+            gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
+            gl.glNormalPointer(GL2.GL_FLOAT, 0, norms);
         }
 
         int numOfTexCoords = trimesh.getTexCoords().size();
         int numOfTextures = worldApp.getTextures().size();
         if(numOfTexCoords > 0 && numOfTextures > 0) {
             for(int i=0; i<numOfTextures; i++) {
-                gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
+                gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
 
                 if(i > numOfTexCoords - 1)
-                    gl.glTexCoordPointer(2, GL10.GL_FLOAT, 0, trimesh.getTexCoords(0));
+                    gl.glTexCoordPointer(2, GL2.GL_FLOAT, 0, trimesh.getTexCoords(0));
                 else
-                    gl.glTexCoordPointer(2, GL10.GL_FLOAT, 0, trimesh.getTexCoords(i));
+                    gl.glTexCoordPointer(2, GL2.GL_FLOAT, 0, trimesh.getTexCoords(i));
             }
         }
 
-        gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
-        gl.glVertexPointer(3, GL10.GL_FLOAT, 0, trimesh.getVertices());
+        gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
+        gl.glVertexPointer(3, GL2.GL_FLOAT, 0, trimesh.getVertices());
         switch(trimesh.drawMode) {
         case POINTS:
-            gl.glDrawArrays(GL10.GL_POINTS, 0, trimesh.getVertexCount());
+            gl.glDrawArrays(GL2.GL_POINTS, 0, trimesh.getVertexCount());
             break;
         case LINES:
-            gl.glDrawArrays(GL10.GL_LINES, 0, trimesh.getVertexCount());
+            gl.glDrawArrays(GL2.GL_LINES, 0, trimesh.getVertexCount());
             break;
         case LINE_STRIP:
-            gl.glDrawArrays(GL10.GL_LINE_STRIP, 0, trimesh.getVertexCount());
+            gl.glDrawArrays(GL2.GL_LINE_STRIP, 0, trimesh.getVertexCount());
             break;
         case TRIANGLES:
-            gl.glDrawArrays(GL10.GL_TRIANGLES, 0, trimesh.getVertexCount());
+            gl.glDrawArrays(GL2.GL_TRIANGLES, 0, trimesh.getVertexCount());
             break;
         case TRIANGLE_STRIP:
-            gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, trimesh.getVertexCount());
+            gl.glDrawArrays(GL2.GL_TRIANGLE_STRIP, 0, trimesh.getVertexCount());
             break;
         case TRIANGLE_FAN:
-            gl.glDrawArrays(GL10.GL_TRIANGLE_FAN, 0, trimesh.getVertexCount());
+            gl.glDrawArrays(GL2.GL_TRIANGLE_FAN, 0, trimesh.getVertexCount());
             break;
         }
-        gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
+        gl.glDisableClientState(GL2.GL_VERTEX_ARRAY);
 
         if(norms != null) {
-            gl.glDisableClientState(GL10.GL_NORMAL_ARRAY);
+            gl.glDisableClientState(GL2.GL_NORMAL_ARRAY);
         }
     }
     

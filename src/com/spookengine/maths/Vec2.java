@@ -16,6 +16,10 @@ public class Vec2 extends Vec {
         v[0] = x;
         v[1] = y;
     }
+    
+    public Vec2(float[] v) {
+        super(v);
+    }
 
     public Vec2(Vec vec) {
         super(vec);
@@ -33,6 +37,13 @@ public class Vec2 extends Vec {
     public Vec2 setTo(Vec vec) {
         return setTo(vec.v[0], vec.v[1]);
     }
+    
+    @Override
+    public Vec2 setTo(float[] v) {
+        super.setTo(v);
+        
+        return this;
+    }
 
     public Vec2 setTo(float x, float y) {
         this.v[0] = x;
@@ -45,6 +56,13 @@ public class Vec2 extends Vec {
     public Vec2 add(Vec vec) {
         return add(vec.v[0], vec.v[1]);
     }
+    
+    @Override
+    public Vec2 add(float[] v) {
+        super.add(v);
+        
+        return this;
+    }
 
     public Vec2 add(float x, float y) {
         this.v[0] += x;
@@ -56,6 +74,13 @@ public class Vec2 extends Vec {
     @Override
     public Vec2 sub(Vec vec) {
         return sub(vec.v[0], vec.v[1]);
+    }
+    
+    @Override
+    public Vec2 sub(float[] v) {
+        super.sub(v);
+        
+        return this;
     }
 
     public Vec2 sub(float x, float y) {
@@ -74,6 +99,13 @@ public class Vec2 extends Vec {
     public Vec2 mult(Vec vec) {
         return mult(vec.v[0], vec.v[1]);
     }
+    
+    @Override
+    public Vec2 mult(float[] v) {
+        super.mult(v);
+        
+        return this;
+    }
 
     public Vec2 mult(float x, float y) {
         v[0] *= x;
@@ -90,6 +122,13 @@ public class Vec2 extends Vec {
     @Override
     public Vec2 div(Vec vec) {
         return div(vec.v[0], vec.v[1]);
+    }
+    
+    @Override
+    public Vec2 div(float[] v) {
+        super.div(v);
+        
+        return this;
     }
 
     public Vec2 div(float x, float y) {

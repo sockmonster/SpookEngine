@@ -104,7 +104,7 @@ public class Trimesh {
     public static Trimesh Line(int dim, DrawMode drawMode, Vec3[] points) {
         return new Trimesh(drawMode, points);
     }
-
+    
     /**
      * Creates a new Triangle Trimesh.
      *
@@ -113,6 +113,18 @@ public class Trimesh {
      * @return A new triangle Trimesh.
      */
     public static Trimesh Triangle(float width, float height) {
+        return Triangle(width, height, 1);
+    }
+    
+    /**
+     * Creates a new Triangle Trimesh.
+     *
+     * @param width The width of the triangle.
+     * @param height The height of the triangle.
+     * @param texRepeat How many times to repeat the texture.
+     * @return A new triangle Trimesh.
+     */
+    public static Trimesh Triangle(float width, float height, float texRepeat) {
         float halfWidth = width/2;
         float halfHeight = height/2;
 
@@ -122,16 +134,16 @@ public class Trimesh {
             new Vec3( 1*halfWidth, -1*halfHeight, 0)
         };
         Vec2[] texCoordArray = new Vec2[] {
-            new Vec2(0.5f, 1.0f),
-            new Vec2(0.0f, 0.0f),
-            new Vec2(1.0f, 0.0f)
+            new Vec2(texRepeat/2f, 0        ),
+            new Vec2(0           , texRepeat),
+            new Vec2(texRepeat   , texRepeat)
         };
 
         Trimesh tri = new Trimesh(DrawMode.TRIANGLES, vertexArray);
         tri.addTexCoords(texCoordArray);
         return tri;
     }
-
+    
     /**
      * Creates a new rectangular Trimesh.
      *
@@ -140,6 +152,18 @@ public class Trimesh {
      * @return A new rectangle Trimesh.
      */
     public static Trimesh Quad(float width, float height) {
+        return Quad(width, height, 1);
+    }
+
+    /**
+     * Creates a new rectangular Trimesh.
+     *
+     * @param width The width of the rectangle.
+     * @param height The height of the rectangle.
+     * @param texRepeat How many times to repeat the texture.
+     * @return A new rectangle Trimesh.
+     */
+    public static Trimesh Quad(float width, float height, float texRepeat) {
         float halfWidth = width/2;
         float halfHeight = height/2;
 
@@ -150,10 +174,10 @@ public class Trimesh {
             new Vec3(-halfWidth, -halfHeight, 0)
         };
         Vec2[] texCoordArray = new Vec2[] {
-            new Vec2(1.0f, 1.0f),
-            new Vec2(0.0f, 1.0f),
-            new Vec2(1.0f, 0.0f),
-            new Vec2(0.0f, 0.0f)
+            new Vec2(0.0f     ,      0.0f),
+            new Vec2(texRepeat,      0.0f),
+            new Vec2(0.0f     , texRepeat),
+            new Vec2(texRepeat, texRepeat)
         };
 
         Trimesh quad = new Trimesh(DrawMode.TRIANGLE_STRIP, vertexArray);

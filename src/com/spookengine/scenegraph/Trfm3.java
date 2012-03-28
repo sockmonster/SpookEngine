@@ -430,7 +430,7 @@ public class Trfm3 extends Trfm {
     @Override
     public void applyInverse(Vec vec) {
         tmpM.setTo(at);
-        ((Mat3) tmpM).invert();
+        ((Mat4) tmpM).invert();
 
         tmpM.mult(vec);
     }

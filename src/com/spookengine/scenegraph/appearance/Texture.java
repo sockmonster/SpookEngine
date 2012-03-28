@@ -1,70 +1,80 @@
 package com.spookengine.scenegraph.appearance;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
  * @author Oliver Winks
  */
 public class Texture {
-
-    protected List<ByteBuffer> imgData;
-    protected List<Integer> imgWidth;
-    protected List<Integer> imgHeight;
+    /** DO NOT MODIFY DIRECTLY! ONLY THE RENDERER SHOULD CHANGE THIS! */
+    public boolean texPtrGenerated = false;
+    /** DO NOT MODIFY DIRECTLY! ONLY THE RENDERER SHOULD CHANGE THIS! */
     protected int[] texPtr;
+    
+    // images
+    protected ByteBuffer[] bitmaps;
+    protected int[] widths;
+    protected int[] heights;
+    
+    // alpha channel
     protected boolean hasAlpha;
+    
+    // wrapping, repeating, clamping
+    public boolean repeatX = true;
+    public boolean repeatY = true;
 
     public Texture() {
-        imgData = new ArrayList<ByteBuffer>();
-        imgWidth = new ArrayList<Integer>();
-        imgHeight = new ArrayList<Integer>();
+        bitmaps = new ByteBuffer[1];
+        widths = new int[1];
+        heights = new int[1];
         texPtr = new int[1];
+    }
+    
+    public Texture(int mipmapLevels) {
+        bitmaps = new ByteBuffer[mipmapLevels];
+        widths = new int[mipmapLevels];
+        heights = new int[mipmapLevels];
+        texPtr = new int[mipmapLevels];
     }
     
     public int[] getTexturePointer() {
         return texPtr;
     }
 
-    public void setDimensions(List<Integer> width, List<Integer> height) {
-        imgWidth = width;
-        imgHeight = height;
+    public void setDimensions(int[] width, int[] height) {
+        if(width.length == height.length && width.length == bitmaps.length) {
+            this.widths = width;
+            this.heights = height;
+        }
     }
 
     public int getWidth(int i) {
-        return imgWidth.get(i);
+        return widths[i];
     }
 
     public int getHeight(int i) {
-        return imgHeight.get(i);
+        return heights[i];
     }
     
-    public void setBitmaps(List<ByteBuffer> bitmaps) {
-        imgData.clear();
-        imgData.addAll(bitmaps);
-    }
-    
-    public void setBitmap(int i, ByteBuffer bitmap) {
-        if(i>=0 && i<imgData.size()) {
-            imgData.set(i, bitmap);
+    public void setBitmaps(ByteBuffer[] bitmaps) {
+        if(bitmaps.length == this.bitmaps.length) {
+            this.bitmaps = bitmaps;
         }
     }
     
-    public void addBitmap(ByteBuffer bitmap) {
-        imgData.add(bitmap);
-    }
-    
-    public ByteBuffer removeBitmap(int i) {
-        return imgData.remove(i);
+    public void setBitmap(int i, ByteBuffer bitmap) {
+        if(i>=0 && i<bitmaps.length) {
+            bitmaps[i] = bitmap;
+        }
     }
 
-    public List<ByteBuffer> getBitmaps() {
-        return imgData;
+    public ByteBuffer[] getBitmaps() {
+        return bitmaps;
     }
     
     public ByteBuffer getBitmap(int i) {
-        return imgData.get(i);
+        return bitmaps[i];
     }
 
     public boolean hasAlpha() {

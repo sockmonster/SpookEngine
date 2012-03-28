@@ -1,4 +1,4 @@
-package com.spookengine.android;
+package com.spookengine.mobile.android;
 
 import android.opengl.GLU;
 import static com.spookengine.scenegraph.App.*;
@@ -6,13 +6,10 @@ import com.spookengine.scenegraph.*;
 import com.spookengine.scenegraph.appearance.PolyAtt.CullFace;
 import com.spookengine.scenegraph.appearance.*;
 import com.spookengine.scenegraph.camera.Cam;
-import com.spookengine.scenegraph.camera.Cam3;
-import com.spookengine.scenegraph.lights.DirLight;
-import com.spookengine.scenegraph.lights.Light;
-import com.spookengine.scenegraph.lights.LightBulb;
-import com.spookengine.scenegraph.lights.SpotLight;
 import com.spookengine.scenegraph.renderer.Renderer;
 import java.nio.FloatBuffer;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,37 +19,30 @@ import javax.microedition.khronos.opengles.GL10;
  *
  * @author Oliver Winks
  */
-public class AndroidRenderer3 extends Renderer {
-    private static final Logger logger = Logger.getLogger(AndroidRenderer3.class.getName());
-    private static AndroidRenderer3 instance;
+public class AndroidRenderer2 extends Renderer {
+    private static final Logger logger = Logger.getLogger(AndroidRenderer2.class.getName());
+    private static AndroidRenderer2 instance;
     
     private GL10 gl;
-
-    // render vars
-    private static final int[] LIGHTS = new int[] {
-        GL10.GL_LIGHT0, GL10.GL_LIGHT1, GL10.GL_LIGHT2, GL10.GL_LIGHT3,
-        GL10.GL_LIGHT4, GL10.GL_LIGHT5, GL10.GL_LIGHT6, GL10.GL_LIGHT7
-    };
-    private int activeLights;
     
+    private final LayerComparator layerComp = new LayerComparator();
+
     // convenience vars
     private float[] AT = new float[16];
-    private float[] CAM_AT = new float[16];
-    private int[] intArrayType = new int[0];
-    
-    public static AndroidRenderer3 getInstance(GL10 gl) {
+
+    public static AndroidRenderer2 getInstance(GL10 gl) {
         if(instance == null) {
-            instance = new AndroidRenderer3();
+            instance = new AndroidRenderer2();
             
-            instance.worldTransform = new Trfm3();
-            instance.worldAppearance = new App3();
+            instance.worldTransform = new Trfm2();
+            instance.worldAppearance = new App2();
         }
         
         instance.gl = gl;
         return instance;
     }
-    
-    private AndroidRenderer3() {
+
+    private AndroidRenderer2() {
         super();
     }
     
@@ -60,67 +50,55 @@ public class AndroidRenderer3 extends Renderer {
     public void onSurfaceCreated() {
         // initialise OpenGL
         gl.glShadeModel(GL10.GL_SMOOTH);
-        gl.glClearColor(clearColour.x(), clearColour.y(), clearColour.z(), 0.0f);
-        
-        gl.glTexEnvf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_ENV_MODE, GL10.GL_MODULATE);
+        gl.glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
 
-        // enable depth testing
-        gl.glClearDepthf(1f);
-        gl.glEnable(GL10.GL_DEPTH_TEST);
-        gl.glDepthFunc(GL10.GL_LEQUAL);
-
-        gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_FASTEST);
+        // enable alpha blending
+        gl.glEnable(GL10.GL_BLEND);
+        gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
     }
-    
+
     @Override
     public void onSurfaceChanged(int width, int height) {
         canvasChanged = true;
         canvasWidth = width;
         canvasHeight = height;
     }
-    
+
     @Override
     public void onDrawFrame(Spatial root, Cam cam) {
         gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 
         // canvas changed?
         if(canvasChanged) {
-            logger.log(Level.INFO, "GLRenderer 3D canvas changed!");
+            logger.log(Level.INFO, "GLRenderer 2D canvas changed!");
             cam.onCanvasChanged(canvasWidth, canvasHeight);
         }
 
         // viewport
         if(camera != cam || cam.viewportChanged) {
-            logger.log(Level.INFO, "GLRenderer 3D viewport changed {0}, {1}", new Object[]{cam.getViewport().getPos(), cam.getViewport().getDimensions()});
+            logger.log(Level.INFO, "GLRenderer 2D viewport changed {0}, {1}", new Object[]{cam.getViewport().getPos(), cam.getViewport().getDimensions()});
             gl.glViewport(
                     (int) cam.getViewport().getPos().v[0],
                     (int) cam.getViewport().getPos().v[1],
                     (int) cam.getViewport().getDimensions().v[0],
                     (int) cam.getViewport().getDimensions().v[1]);
             cam.viewportChanged = false;
-        }
 
-        // projection matrix
-        Cam3 cam3 = (Cam3) cam;
-        if(camera != cam || cam3.frustumChanged) {
             gl.glMatrixMode(GL10.GL_PROJECTION);
             gl.glLoadIdentity();
-            GLU.gluPerspective(gl,
-                    cam3.getFOV(),
-                    cam3.getAspectRatio(),
-                    cam3.getNearClip(),
-                    cam3.getFarClip());
-            cam3.frustumChanged = false;
-
-            logger.log(Level.INFO, "Cam [{0}, {1}, {2}, {3}]!!", new Object[]{cam3.getFOV(), cam3.getAspectRatio(), cam3.getNearClip(), cam3.getFarClip()});
+            
+            GLU.gluOrtho2D(gl,
+                    (int) cam.getViewport().getPos().v[0],
+                    (int) cam.getViewport().getDimensions().v[0],
+                    (int) cam.getViewport().getPos().v[1],
+                    (int) cam.getViewport().getDimensions().v[1]);
         }
 
         // camera
         gl.glMatrixMode(GL10.GL_MODELVIEW);
         gl.glLoadIdentity();
-
-        cam.getModelView().toOpenGL(CAM_AT);
-        gl.glMultMatrixf(CAM_AT, 0);
+        cam.getModelView().toOpenGL(AT);
+        gl.glMultMatrixf(AT, 0);
         camera = cam;
 
         // reset state
@@ -133,9 +111,12 @@ public class AndroidRenderer3 extends Renderer {
         update(root);
         boundAndStack(root);
 
+        // sort render stack
+        Collections.sort(renderStack, layerComp);
+        
         // render
         int nNodes = renderStack.size();
-        Visual<Trfm3, App3> currNode;
+        Visual<Trfm2, App2> currNode;
         for(int j=0; j<nNodes; j++) {
             currNode = renderStack.pop();
             if(currNode instanceof Geom) {
@@ -151,45 +132,10 @@ public class AndroidRenderer3 extends Renderer {
                 disableApp(currNode.getWorldAppearance());
             }
         }
-
-        // deffered rendering
-        if(!deferredStack.isEmpty()) {
-            // TODO: sort the stack
-//            Collections.sort(deferredStack, depthComparator);
-
-            gl.glEnable(GL10.GL_BLEND);
-            gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
-            gl.glDepthMask(false);
-
-            nNodes = deferredStack.size();
-            for(int j=0; j<nNodes; j++) {
-                currNode = deferredStack.pop();
-                if(currNode instanceof Geom) {
-                    Geom geom = (Geom) currNode;
-
-                    enableApp(currNode.getWorldAppearance());
-                    gl.glPushMatrix();
-                        /*
-                         * Transform the VisualNode. Remember, angles must be reversed
-                         * because OpenGL matices are the transpose of pure3d matrices,
-                         * therefore rotation matrices are reversed!
-                         */
-                        currNode.getWorldTransform().getAffineTransform().toOpenGL(AT);
-                        gl.glMultMatrixf(AT, 0);
-
-                        render(geom);
-                    gl.glPopMatrix();
-                    disableApp(currNode.getWorldAppearance());
-                }
-            }
-
-            gl.glDepthMask(true);
-            gl.glDisable(GL10.GL_BLEND);
-        }
         
         canvasChanged = false;
     }
-    
+
     private void generateTexturePointer(Texture tex) {
 //        tex.texPtr = new int[1];
 
@@ -203,30 +149,28 @@ public class AndroidRenderer3 extends Renderer {
         // TODO: Note, OpenGL ES 1.0 does not support clamping without borders
         gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_S, GL10.GL_REPEAT);
         gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_T, GL10.GL_REPEAT);
-        
-        //////////////////////////////////////////////////////////////////////////////////////////////////////
-        // TODO: BITMAPS IN SPOOKENGINE-CORE NEEDS TO REMOVE DEPENDANCY ON ANDROID BEFORE TEXTURES CAN WORK!!!
+
         // if more than one image is defined then use mipmapping
-        if(tex.getBitmaps().size() > 1) {
-            gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR);
-            gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST_MIPMAP_NEAREST);
-        } else {
-            gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR);
-            gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST);
-        }
-        
-        // TODO: THIS NEEDS TO BE LOOKED AT SO THAT MIPMAPPING WORKS!!!!
-        for(int i=0; i<tex.getBitmaps().size(); i++) {
+//        if(tex.getBitmaps().length > 1) {
+//            gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR);
+//            gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST_MIPMAP_NEAREST);
+//        } else {
+//            gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR);
+//            gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST);
+//        }
+
+//        // Use the Android GLUtils to specify a two-dimensional texture image from our bitmap
+//        // TODO: THIS NEEDS TO BE LOOKED AT SO THAT MIPMAPPING WORKS!!!!
+//        for(int i=0; i<tex.getBitmaps().length; i++) {
 //            GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, tex.getBitmaps()[i], 0);
-            
-            // TODO: TO SLOW TO USE AT THE MO
-            gl.glTexImage2D(GL10.GL_TEXTURE_2D, i, GL10.GL_RGBA, tex.getWidth(i), tex.getHeight(i), 
-                    0, GL10.GL_RGBA, GL10.GL_UNSIGNED_BYTE, tex.getBitmap(i));
-        }
+//            
+//            // TODO: TO SLOW TO USE AT THE MO
+//            //gl.glTexImage2D(GL10.GL_TEXTURE_2D, i, GL10.GL_RGBA, tex.getWidth(i), tex.getHeight(i), 0, GL10.GL_RGBA, GL10.GL_UNSIGNED_BYTE, tex.getData(i));
+//        }
         //////////////////////////////////////////////////////////////////////////////////////////////////////
     }
-    
-    private void enableApp(App3 app) {
+
+    private void enableApp(App2 app) {
         int inheritance = app.getInheritance();
         
         /* ******** ******** ******** */
@@ -280,18 +224,9 @@ public class AndroidRenderer3 extends Renderer {
         }
 
         /* ******** ******** ******** */
-        /*       ENABLE MATERIAL      */
-        /*        OR COLOURING        */
+        /*       ENABLE COLOUR        */
         /* ******** ******** ******** */
-        if((inheritance & MATERIAL) != 0) {
-            Material material = app.getMaterial();
-            gl.glMaterialf(GL10.GL_FRONT_AND_BACK, GL10.GL_SHININESS, material.getShininess());
-            gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_AMBIENT, material.getAmbient(alpha));
-            gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_DIFFUSE, material.getDiffuse(alpha));
-            gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_SPECULAR, material.getSpecular(alpha));
-            gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_EMISSION, material.getEmissive(alpha));
-        } else if((inheritance & COLOUR) != 0) {
-            // enable
+        if((inheritance & COLOUR) != 0) {
             Colour colour = app.getColour();
             gl.glColor4f(
                     colour.getColour()[0],
@@ -324,88 +259,9 @@ public class AndroidRenderer3 extends Renderer {
                     gl.glTexEnvf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_ENV_MODE, GL10.GL_DECAL);
             }
         }
-
-        /* ******** ******** ******** */
-        /*       ENABLE LIGHTS        */
-        /* ******** ******** ******** */
-        activeLights = 0;
-        List<Light> lights = app.getLights();
-        int numOfLights = lights.size();
-        if(numOfLights > 0) {
-            gl.glEnable(GL10.GL_LIGHTING);
-
-            // enable lights according to node's lighting policy
-            int light;
-            switch(app.getLightingPolicy()) {
-                case LOCAL_FIRST:
-                    light = numOfLights - 1;
-                    while(light >= 0 && activeLights < 8) {
-                        Light currLight = lights.get(light);
-                        if(currLight.on) {
-                            enableLight(currLight);
-                            activeLights++;
-                        }
-                        light--;
-                    }
-                    break;
-
-                case GLOBAL_FIRST:
-                    light = 0;
-                    while(light < numOfLights && activeLights < 8) {
-                        Light currLight = lights.get(light);
-                        if(lights.get(light).on) {
-                            enableLight(currLight);
-                            activeLights++;
-                        }
-                        light++;
-                    }
-                    break;
-            }
-        }
     }
-    
-    private void enableLight(Light light) {
-        if(light instanceof LightBulb) {
-            LightBulb lb = (LightBulb) light;
-            if(lb.hasAmbience) {
-                gl.glEnable(LIGHTS[activeLights]);
-                gl.glLightfv(LIGHTS[activeLights], GL10.GL_AMBIENT, light.getColour(), 0);
-            } else {
-                gl.glEnable(LIGHTS[activeLights]);
-            }
 
-            gl.glLightf(LIGHTS[activeLights], GL10.GL_CONSTANT_ATTENUATION, lb.getConstAttenuation());
-            gl.glLightf(LIGHTS[activeLights], GL10.GL_LINEAR_ATTENUATION, lb.getLinearAttenuation());
-            gl.glLightf(LIGHTS[activeLights], GL10.GL_QUADRATIC_ATTENUATION, lb.getQuadAttenuation());
-
-            gl.glLightfv(LIGHTS[activeLights], GL10.GL_DIFFUSE, light.getColour(), 0);
-            gl.glLightfv(LIGHTS[activeLights], GL10.GL_SPECULAR, light.getColour(), 0);
-            gl.glLightfv(LIGHTS[activeLights], GL10.GL_POSITION, new float[] {
-                lb.getPos().x(), lb.getPos().y(), lb.getPos().z(), 1}, 0);
-
-            // SpotLight
-            if(light instanceof SpotLight) {
-                SpotLight sl = (SpotLight) light;
-
-                gl.glLightf(LIGHTS[activeLights], GL10.GL_SPOT_CUTOFF, sl.getAngle());
-                gl.glLightf(LIGHTS[activeLights], GL10.GL_SPOT_EXPONENT, sl.getFoucs());
-                gl.glLightfv(LIGHTS[activeLights], GL10.GL_SPOT_DIRECTION, new float[] {
-                    sl.getDir().x(), sl.getDir().y(), sl.getDir().z()}, 0);
-            }
-        } else if(light instanceof Light) {
-            gl.glEnable(LIGHTS[activeLights]);
-            gl.glLightfv(LIGHTS[activeLights], GL10.GL_AMBIENT, light.getColour(), 0);
-
-            // Direction light
-            if(light instanceof DirLight) {
-                DirLight dl = (DirLight) light;
-                gl.glLightfv(LIGHTS[activeLights], GL10.GL_POSITION, new float[] {
-                    dl.getDir().x(), dl.getDir().y(), dl.getDir().z(), 0}, 0);
-            }
-        }
-    }
-    
-    private void disableApp(App3 app) {
+    private void disableApp(App2 app) {
         int inheritance = app.getInheritance();
         
         /* ******** ******** ******** */
@@ -442,40 +298,19 @@ public class AndroidRenderer3 extends Renderer {
         }
 
         /* ******** ******** ******** */
-        /*      DISABLE MATERIAL      */
-        /*        OR COLOURING        */
+        /*    DISABLE COLOURING       */
         /* ******** ******** ******** */
-        if((inheritance & MATERIAL) != 0) {
-            Material.defaultAmbient.position(0);
-            Material.defaultDiffuse.position(0);
-            Material.defaultSpecular.position(0);
-            Material.defaultEmissive.position(0);
-
-            gl.glMaterialf(GL10.GL_FRONT_AND_BACK, GL10.GL_SHININESS, 0);
-            gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_AMBIENT, Material.defaultAmbient);
-            gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_DIFFUSE, Material.defaultDiffuse);
-            gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_SPECULAR, Material.defaultSpecular);
-            gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_EMISSION, Material.defaultEmissive);
-        } else if((inheritance & COLOUR) != 0) {
+        if((inheritance & COLOUR) != 0)
             gl.glColor4f(1, 1, 1, 1);
-        }
 
         /* ******** ******** ******** */
         /*  DISABLE TEXTURE MAPPING   */
         /* ******** ******** ******** */
         List<Texture> textures = app.getTextures();
-        if(!textures.isEmpty()) {
+        if(!textures.isEmpty())
             gl.glDisable(GL10.GL_TEXTURE_2D);
-        }
-
-        /* ******** ******** ******** */
-        /*       DISABLE LIGHTS       */
-        /* ******** ******** ******** */
-        for(int i=0; i<activeLights; i++)
-            gl.glDisable(LIGHTS[i]);
-        gl.glDisable(GL10.GL_LIGHTING);
     }
-    
+
     private void render(Geom geom) {
         Trimesh trimesh = geom.getTrimesh();
         App worldApp = geom.getWorldAppearance();
@@ -527,5 +362,18 @@ public class AndroidRenderer3 extends Renderer {
             gl.glDisableClientState(GL10.GL_NORMAL_ARRAY);
         }
     }
-    
+
+    private class LayerComparator implements Comparator<Visual> {
+        @Override
+        public int compare(Visual o1, Visual o2) {
+            if(o1.layer > o2.layer) {
+                return -1;
+            }  else if (o1.layer < o2.layer) {
+                return 1;
+            }  else {
+                return 0;
+            }
+        }
+    }
+
 }

@@ -1,4 +1,4 @@
-package com.spookengine.jogl;
+package com.spookengine.desktop.jogl;
 
 import static com.spookengine.scenegraph.App.*;
 import com.spookengine.scenegraph.*;

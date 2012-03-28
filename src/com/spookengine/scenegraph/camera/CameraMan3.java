@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 public class CameraMan3 extends Spatial<Trfm3> {
     
     private Logger logger = Logger.getLogger(CameraMan3.class.getName());
+    public boolean fixLookAt;
     protected Vec3 worldLookAt;
     protected Vec3 worldDir;
     protected Vec3 worldUp;
@@ -24,6 +25,7 @@ public class CameraMan3 extends Spatial<Trfm3> {
     public CameraMan3(String name, Cam3 camera) {
         super(false, name);
         
+        fixLookAt = false;
         worldLookAt = new Vec3();
         worldDir = new Vec3(0,0,1);
         worldUp = new Vec3(0,1,0);
@@ -52,6 +54,10 @@ public class CameraMan3 extends Spatial<Trfm3> {
 
     public Vec3 getWorldLookAt() {
         return worldLookAt;
+    }
+    
+    public void setWorldLookAt(Vec3 pos) {
+        this.worldLookAt = pos;
     }
 
     /**
@@ -94,17 +100,21 @@ public class CameraMan3 extends Spatial<Trfm3> {
         // calculate camera pos
         cam.pos.toZeros();
         this.worldTransform.apply(cam.pos);
+        
+        if(!fixLookAt) {
+            // calculate up vector
+            worldUp.setTo(0,1,0);
+            this.worldTransform.apply(worldUp);
+            worldUp.sub(cam.pos).norm(); // testing
 
-        // calculate up vector
-        worldUp.setTo(0,1,0);
-        this.worldTransform.apply(worldUp);
-        worldUp.sub(cam.pos).norm(); // testing
+            // calculate lookat vector
+            worldLookAt.setTo(0,0,1);
+            this.worldTransform.apply(worldLookAt);
+        } else {
+            // TODO: CALCULATE UP VECTOR!
+        }
 
-        // calculate lookat vector
-        worldLookAt.setTo(0,0,1);
-        this.worldTransform.apply(worldLookAt);
-
-        // set position, look at direction and up direction
+        // set look at direction and up direction
         cam.up.setTo(worldUp);
         cam.lookAt.setTo(worldLookAt);
 

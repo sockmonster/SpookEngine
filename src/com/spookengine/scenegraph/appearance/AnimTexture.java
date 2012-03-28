@@ -3,7 +3,6 @@ package com.spookengine.scenegraph.appearance;
 import com.spookengine.events.Task;
 import com.spookengine.events.TaskScheduler;
 import java.nio.ByteBuffer;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -44,7 +43,7 @@ public class AnimTexture extends Texture {
     }
     
     @Override
-    public void setBitmaps(List<ByteBuffer> bitmaps) {
+    public void setBitmaps(ByteBuffer[] bitmaps) {
         // do nothing
         logger.log(Level.WARNING, "Cannot set bitmaps on an animated texture. " +
                 "Try getting the current texture and setting it's bitmaps.");
@@ -58,23 +57,7 @@ public class AnimTexture extends Texture {
     }
     
     @Override
-    public void addBitmap(ByteBuffer bitmap) {
-        // do nothing
-        logger.log(Level.WARNING, "Cannot add a bitmap on an animated texture. " +
-                "Try getting the current texture and adding to it's bitmap data.");
-    }
-    
-    @Override
-    public ByteBuffer removeBitmap(int i) {
-        // do nothing
-        logger.log(Level.WARNING, "Cannot remove a bitmap from an animated texture. " +
-                "Try getting the current texture and removing the bitmap from that.");
-        
-        return null;
-    }
-    
-    @Override
-    public List<ByteBuffer> getBitmaps() {
+    public ByteBuffer[] getBitmaps() {
         return frames[currFrame].getBitmaps();
     }
     
