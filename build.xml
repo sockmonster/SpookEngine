@@ -75,13 +75,14 @@
     <target name="-post-jar">
         <!-- package maths lib into a separate jar -->
         <jar destfile="${dist.dir}/${application.title}-Maths.jar" 
-            basedir="${build.classes.dir}" 
-            includes="com/spookengine/maths/**"/>
+            basedir="${build.classes.dir}"
+            includes="com/spookengine/maths/**" />
             
         <!-- package android version -->
         <jar destfile="${dist.dir}/${application.title}-Android.jar" 
             basedir="${build.classes.dir}" 
-            excludes="com/spookengine/desktop/**, com/spookengine/maths/**"/>
+            excludes="com/spookengine/desktop/**, com/spookengine/maths/**"
+            includes="**" />
         
         <!-- package jogl version -->
         <jar destfile="${dist.dir}/${application.title}-JOGL.jar" 

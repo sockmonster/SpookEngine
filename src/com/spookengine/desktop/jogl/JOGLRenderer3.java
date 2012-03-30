@@ -50,11 +50,14 @@ public class JOGLRenderer3 extends Renderer {
         
         instance.gl = gl;
         instance.glu = new GLU();
+        
         return instance;
     }
     
     private JOGLRenderer3() {
         super();
+        
+        logger.log(Level.INFO, "Renormalizing renderer loaded!!");
     }
     
     @Override
@@ -146,8 +149,10 @@ public class JOGLRenderer3 extends Renderer {
                 gl.glPushMatrix();
                     currNode.getWorldTransform().getAffineTransform().toOpenGL(AT);
                     gl.glMultMatrixf(AT, 0);
-
+                    
+                    gl.glEnable(GL2.GL_NORMALIZE);
                     render(geom);
+                    gl.glDisable(GL2.GL_NORMALIZE);
                 gl.glPopMatrix();
                 disableApp(currNode.getWorldAppearance());
             }
@@ -157,7 +162,7 @@ public class JOGLRenderer3 extends Renderer {
         if(!deferredStack.isEmpty()) {
             // TODO: sort the stack
 //            Collections.sort(deferredStack, depthComparator);
-
+            
             gl.glEnable(GL2.GL_BLEND);
             gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
             gl.glDepthMask(false);
@@ -271,10 +276,22 @@ public class JOGLRenderer3 extends Renderer {
         if((inheritance & ALPHA) != 0) {
             alpha = app.getAlpha().getValue();
         }
+        
+        /* ******** ******** ******** */
+        /*      ENABLE COLOURING      */
+        /* ******** ******** ******** */
+        if((inheritance & COLOUR) != 0) {
+            // enable
+            Colour colour = app.getColour();
+            gl.glColor4f(
+                    colour.getColour()[0],
+                    colour.getColour()[1],
+                    colour.getColour()[2],
+                    alpha);
+        } 
 
         /* ******** ******** ******** */
         /*       ENABLE MATERIAL      */
-        /*        OR COLOURING        */
         /* ******** ******** ******** */
         if((inheritance & MATERIAL) != 0) {
             Material material = app.getMaterial();
@@ -283,14 +300,6 @@ public class JOGLRenderer3 extends Renderer {
             gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_DIFFUSE, material.getDiffuse(alpha));
             gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_SPECULAR, material.getSpecular(alpha));
             gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_EMISSION, material.getEmissive(alpha));
-        } else if((inheritance & COLOUR) != 0) {
-            // enable
-            Colour colour = app.getColour();
-            gl.glColor4f(
-                    colour.getColour()[0],
-                    colour.getColour()[1],
-                    colour.getColour()[2],
-                    alpha);
         } else if((inheritance & POINT_ATT) != 0 && alpha < 1) {
             // default colour with transparency
             gl.glColor4f(1,1,1,alpha);

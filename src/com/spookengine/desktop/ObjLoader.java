@@ -4,6 +4,7 @@ import com.spookengine.maths.Vec2;
 import com.spookengine.maths.Vec3;
 import com.spookengine.scenegraph.*;
 import com.spookengine.scenegraph.appearance.Alpha;
+import com.spookengine.scenegraph.appearance.Colour;
 import com.spookengine.scenegraph.appearance.Texture;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
@@ -287,7 +288,7 @@ public class ObjLoader {
                     // get first token
                     nextToken(strBuf, lineBegin, lineEnd, ' ', token);
                     int tokSize = token[1] - token[0];
-
+                    
                     if(tokSize == 5 && strBuf.charAt(token[0]) == 'n') {
                         // new material
                         nextToken(strBuf, token[1] + 1, lineEnd, ' ', token);
@@ -577,9 +578,14 @@ public class ObjLoader {
             }
 
             // create the material
-            if (mtl != null) {
-                model.getLocalAppearance().override(App.MATERIAL);
-
+            if(mtl != null) {
+                logger.log(Level.INFO, "Adding colour & material to geometry");
+                model.getLocalAppearance().override(App.MATERIAL | App.COLOUR);
+                
+                // add colour
+                model.getLocalAppearance().setColour(new Colour(mtl.diffuse));
+                
+                // add material
                 com.spookengine.scenegraph.appearance.Material newMat = new com.spookengine.scenegraph.appearance.Material();
                 newMat.setShininess(mtl.shininess);
                 newMat.setAmbient(mtl.ambient[0], mtl.ambient[1], mtl.ambient[2]);

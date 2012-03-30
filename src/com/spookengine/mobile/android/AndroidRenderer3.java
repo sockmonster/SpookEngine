@@ -280,8 +280,20 @@ public class AndroidRenderer3 extends Renderer {
         }
 
         /* ******** ******** ******** */
+        /*      ENABLE COLOURING      */
+        /* ******** ******** ******** */
+        if((inheritance & COLOUR) != 0) {
+            // enable
+            Colour colour = app.getColour();
+            gl.glColor4f(
+                    colour.getColour()[0],
+                    colour.getColour()[1],
+                    colour.getColour()[2],
+                    alpha);
+        } 
+
+        /* ******** ******** ******** */
         /*       ENABLE MATERIAL      */
-        /*        OR COLOURING        */
         /* ******** ******** ******** */
         if((inheritance & MATERIAL) != 0) {
             Material material = app.getMaterial();
