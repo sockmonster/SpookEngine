@@ -18,6 +18,7 @@ import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.media.opengl.*;
 import javax.media.opengl.awt.GLCanvas;
+import javax.media.opengl.awt.GLJPanel;
 
 /**
  *
@@ -26,6 +27,7 @@ import javax.media.opengl.awt.GLCanvas;
 public class JOGLTest implements GLEventListener {
     
     private Visual<Trfm3, App3> root;
+    private Geom<Trfm3, App3> floor;
     private Cam3 cam;
     
     public static void main(String[] args) {
@@ -36,7 +38,7 @@ public class JOGLTest implements GLEventListener {
         // setup JOGL
         GLProfile glp = GLProfile.getDefault();
         GLCapabilities glCaps = new GLCapabilities(glp);
-        GLCanvas glCanvas = new GLCanvas();
+        GLJPanel glCanvas = new GLJPanel(glCaps);
         
         // setup window
         Frame frame = new Frame();
@@ -72,7 +74,7 @@ public class JOGLTest implements GLEventListener {
         root.attachChild(camMan);
         
         // build floor
-        Geom<Trfm3, App3> floor = Geom.new3D("floor", Trimesh.Quad(5, 5, 5));
+        floor = Geom.new3D("floor", Trimesh.Quad(5, 5, 5));
         
         // colour the floor
 //        floor.getLocalAppearance().override(App.COLOUR);

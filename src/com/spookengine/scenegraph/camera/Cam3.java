@@ -334,6 +334,7 @@ public class Cam3 extends Cam<Vec3> {
 
         // recalculate frustum
         ratio = (float) width/height;
+        frustumChanged = true;
         calculatePlanes();
 
         // calculate modelview matrix

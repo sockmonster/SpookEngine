@@ -89,7 +89,7 @@ public class JOGLRenderer3 extends Renderer {
 
         // canvas changed?
         if(canvasChanged) {
-            logger.log(Level.INFO, "GLRenderer 3D canvas changed!");
+            logger.log(Level.INFO, "GLRenderer 3D canvas changed.");
             cam.onCanvasChanged(canvasWidth, canvasHeight);
         }
 
