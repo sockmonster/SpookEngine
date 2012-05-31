@@ -3,8 +3,9 @@ package com.spookengine.scenegraph.lights;
 import com.spookengine.maths.Vec3;
 import com.spookengine.scenegraph.Node;
 import com.spookengine.scenegraph.Spatial;
-import com.spookengine.scenegraph.Trfm3;
+import com.spookengine.scenegraph.Trfm;
 import com.spookengine.scenegraph.collision.BoundingVolume;
+import com.spookengine.scenegraph.renderer.Renderer;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -14,23 +15,38 @@ import java.util.logging.Logger;
  * 
  * @author Oliver Winks
  */
-public class LightMan extends Spatial<Trfm3> {
-    
-    private Logger logger = Logger.getLogger(LightMan.class.getName());
+public class LightMan extends Spatial {
+    private static final Logger logger = Logger.getLogger(LightMan.class.getName());
 
     private Vec3 worldDir;
     private LightBulb light;
 
     public LightMan(String name) {
-        super(false, name);
-
-        worldDir = new Vec3(0,0,1);
+        super(name);
+        
+        switch(Renderer.coordSys) {
+            case Y_UP:
+                worldDir = new Vec3( 0, 0, 1);
+                break;
+                
+            case Z_UP:
+                worldDir = new Vec3( 0, 1, 0);
+                break;
+        }
     }
 
     public LightMan(String name, LightBulb light) {
-        super(false, name);
+        super(name);
         
-        worldDir = new Vec3(0,0,1);
+        switch(Renderer.coordSys) {
+            case Y_UP:
+                worldDir = new Vec3( 0, 0, 1);
+                break;
+                
+            case Z_UP:
+                worldDir = new Vec3( 0, 1, 0);
+                break;
+        }
         this.light = light;
     }
 
@@ -79,16 +95,24 @@ public class LightMan extends Spatial<Trfm3> {
     }
 
     @Override
-    public void applyTransform(Trfm3 worldTransform) {
+    public void applyTransform(Trfm worldTransform) {
         super.applyTransform(worldTransform);
 
         // set light position
         light.pos.toZeros();
-        worldTransform.getPos(light.pos);
+        worldTransform.apply(light.pos);
 
         if(light instanceof SpotLight) {
             // update direction
-            worldDir.setTo(0,0,1);
+            switch(Renderer.coordSys) {
+                case Y_UP:
+                    worldDir = new Vec3( 0, 0, 1);
+                    break;
+
+                case Z_UP:
+                    worldDir = new Vec3( 0, 1, 0);
+                    break;
+            }
             this.worldTransform.apply(worldDir);
 
             // set light direction

@@ -1,8 +1,8 @@
 package com.spookengine.scenegraph.renderer;
 
-import com.spookengine.scenegraph.App3;
+import com.spookengine.scenegraph.App;
 import com.spookengine.scenegraph.Spatial;
-import com.spookengine.scenegraph.Trfm3;
+import com.spookengine.scenegraph.Trfm;
 import com.spookengine.scenegraph.camera.Cam;
 import java.util.logging.Logger;
 
@@ -18,8 +18,8 @@ public class NullRenderer extends Renderer {
         if(instance == null) {
             instance = new NullRenderer();
             
-            instance.worldTransform = new Trfm3();
-            instance.worldAppearance = new App3();
+            instance.worldTransform = new Trfm();
+            instance.worldAppearance = new App();
         }
         
         return instance;

@@ -10,7 +10,8 @@ import java.util.List;
  * @author Oliver Winks
  */
 public abstract class Node implements Cloneable {
-
+    public final Object lock = new Object();
+    
     public String name;
     protected Node parent;
     protected List<Node> children;
@@ -76,9 +77,11 @@ public abstract class Node implements Cloneable {
      * @param child The Node to attach to this Node.
      */
     public void attachChild(Node child) {
-        if(!children.contains(child)) {
-            child.parent = this;
-            children.add(child);
+        synchronized(lock) {
+            if(!children.contains(child)) {
+                child.parent = this;
+                children.add(child);
+            }
         }
     }
 
@@ -88,9 +91,11 @@ public abstract class Node implements Cloneable {
      * @param child The Node to detach from this Node.
      */
     public void detachChild(Node child) {
-        if(children.contains(child)) {
-            child.parent = null;
-            children.remove(child);
+        synchronized(lock) {
+            if(children.contains(child)) {
+                child.parent = null;
+                children.remove(child);
+            }
         }
     }
 
@@ -102,9 +107,13 @@ public abstract class Node implements Cloneable {
      * @return The removed child, null if the index is out of bounds.
      */
     public Node detachChild(int i) {
-        Node child = children.remove(i);
-        if(child != null)
-            child.parent = null;
+        Node child = null;
+        
+        synchronized(lock) {
+            child = children.remove(i);
+            if(child != null)
+                child.parent = null;
+        }
 
         return child;
     }
@@ -116,9 +125,11 @@ public abstract class Node implements Cloneable {
      * @param newParent This Node's new parent.
      */
     public void reparent(Node newParent) {
-        if(!newParent.children.contains(this)) {
-            parent.detachChild(this);
-            newParent.attachChild(this);
+        synchronized(lock) {
+            if(!newParent.children.contains(this)) {
+                parent.detachChild(this);
+                newParent.attachChild(this);
+            }
         }
     }
 
@@ -160,7 +171,7 @@ public abstract class Node implements Cloneable {
         str += node.name + '\n';
         
         for(Node child : node.getChildren())
-            str += toString((Spatial<Trfm3>) child, depth + 1);
+            str += toString((Spatial) child, depth + 1);
             
         return str;
     }

@@ -1,8 +1,11 @@
-package com.spookengine.desktop;
+package com.spookengine.platform.desktop;
 
 import com.spookengine.maths.Vec2;
 import com.spookengine.maths.Vec3;
-import com.spookengine.scenegraph.*;
+import com.spookengine.scenegraph.App;
+import com.spookengine.scenegraph.Geom;
+import com.spookengine.scenegraph.Trimesh;
+import com.spookengine.scenegraph.Visual;
 import com.spookengine.scenegraph.appearance.Alpha;
 import com.spookengine.scenegraph.appearance.Colour;
 import com.spookengine.scenegraph.appearance.Texture;
@@ -236,7 +239,7 @@ public class ObjLoader {
 
         // build the model
         if(numOfGroups > 1) {
-            Visual<Trfm3, App3> nodeGroup = Visual.new3D("");
+            Visual nodeGroup = new Visual("");
             for(int i=0; i<groups.size(); i++) {
                 Visual node = groups.get(i).convert();
                 nodeGroup.attachChild(node);
@@ -567,14 +570,14 @@ public class ObjLoader {
                 }
             }
 
-            Geom<Trfm3, App3> model;
+            Geom model;
             if(hasTexCoords && hasNormals) {
-                model = Geom.new3D(name, new Trimesh(Trimesh.DrawMode.TRIANGLES, vertexArray, normalArray));
+                model = new Geom(name, new Trimesh(Trimesh.DrawMode.TRIANGLES, vertexArray, normalArray));
                 model.getTrimesh().addTexCoords(texCoordArray);
             } else if (hasNormals) {
-                model = Geom.new3D(name, new Trimesh(Trimesh.DrawMode.TRIANGLES, vertexArray, normalArray));
+                model = new Geom(name, new Trimesh(Trimesh.DrawMode.TRIANGLES, vertexArray, normalArray));
             } else {
-                model = Geom.new3D(name, new Trimesh(Trimesh.DrawMode.TRIANGLES, vertexArray));
+                model = new Geom(name, new Trimesh(Trimesh.DrawMode.TRIANGLES, vertexArray));
             }
 
             // create the material
@@ -583,7 +586,7 @@ public class ObjLoader {
                 model.getLocalAppearance().override(App.MATERIAL | App.COLOUR);
                 
                 // add colour
-                model.getLocalAppearance().setColour(new Colour(mtl.diffuse));
+                model.getLocalAppearance().colour = new Colour(mtl.diffuse);
                 
                 // add material
                 com.spookengine.scenegraph.appearance.Material newMat = new com.spookengine.scenegraph.appearance.Material();
@@ -592,12 +595,12 @@ public class ObjLoader {
                 newMat.setDiffuse(mtl.diffuse[0], mtl.diffuse[1], mtl.diffuse[2]);
                 newMat.setSpecular(mtl.specular[0], mtl.specular[1], mtl.specular[2]);
 
-                model.getLocalAppearance().setMaterial(newMat);
+                model.getLocalAppearance().material = newMat;
                 if(mtl.alpha < 1) {
                     model.getLocalAppearance().override(App.ALPHA);
 
                     Alpha tran = new Alpha(mtl.alpha);
-                    model.getLocalAppearance().setAlpha(tran);
+                    model.getLocalAppearance().alpha = tran;
                 }
 
                 // create textures

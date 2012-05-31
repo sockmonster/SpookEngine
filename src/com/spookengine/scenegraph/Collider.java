@@ -9,20 +9,11 @@ import java.util.logging.Logger;
  *
  * @author Oliver Winks
  */
-public class Collider<T extends Trfm> extends Spatial<T> {
-
+public class Collider extends Spatial {
     private static final Logger logger = Logger.getLogger(Collider.class.getName());
 
-    public static Collider<Trfm2> new2D(String name) {
-        return new Collider<Trfm2>(true, name);
-    }
-
-    public static Collider<Trfm3> new3D(String name) {
-        return new Collider<Trfm3>(false, name);
-    }
-
-    protected Collider(boolean is2D, String name) {
-        super(is2D, name);
+    protected Collider(String name) {
+        super(name);
     }
 
     /**
@@ -59,7 +50,7 @@ public class Collider<T extends Trfm> extends Spatial<T> {
     @Override
     public Node clone() {
         // TODO: need to implement!
-        Collider clone = new Collider(is2D, name);
+        Collider clone = new Collider(name);
         clone.localTransform.setTo(localTransform);
 
         if(bounds != null)

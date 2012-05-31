@@ -1,39 +1,23 @@
 package com.spookengine.scenegraph;
 
 /**
- * The SpatialNode2 class extends Node by providing spatial information to
+ * The Spatial class extends Bound by providing spatial information to
  * scenegraph objects.
  *
  * @author Oliver Winks
  */
-public class Spatial<T extends Trfm> extends Bound {
-
-    protected boolean is2D;
+public class Spatial extends Bound {
+    
     protected boolean hasTransformed;
-    protected T localTransform;
-    protected T worldTransform;
+    protected Trfm localTransform;
+    protected Trfm worldTransform;
 
-    public static Spatial<Trfm2> new2D(String name) {
-        return new Spatial<Trfm2>(true, name);
-    }
-
-    public static Spatial<Trfm3> new3D(String name) {
-        return new Spatial<Trfm3>(false, name);
-    }
-
-    public Spatial(boolean is2D, String name) {
+    public Spatial(String name) {
         super(name);
-        this.is2D = is2D;
-
-        if(is2D) {
-            hasTransformed = true;
-            localTransform = (T) new Trfm2();
-            worldTransform = (T) new Trfm2();
-        } else {
-            hasTransformed = true;
-            localTransform = (T) new Trfm3();
-            worldTransform = (T) new Trfm3();
-        }
+        
+        hasTransformed = true;
+        localTransform = new Trfm();
+        worldTransform = new Trfm();
     }
     
     public boolean hasTransformed() {
@@ -49,7 +33,7 @@ public class Spatial<T extends Trfm> extends Bound {
         this.hasTransformed = hasTransformed;
     }
 
-    public T getLocalTransform() {
+    public Trfm getLocalTransform() {
         return localTransform;
     }
 
@@ -59,13 +43,29 @@ public class Spatial<T extends Trfm> extends Bound {
      *
      * @return This SpatialNode2's world transformation.
      */
-    public T getWorldTransform() {
+    public Trfm getWorldTransform() {
         return worldTransform; // TODO: RETURN A COPY
     }
 
     public void updateLocalTransform() {
         localTransform.update();
         hasTransformed = true;
+    }
+    
+    public void updateWorldTransform() {
+        Node ancestor = parent;
+        while(!(ancestor instanceof Spatial)) {
+            if(ancestor == null) {
+                worldTransform.add(localTransform);
+                return;
+            } else {
+                ancestor = parent.parent;
+            }
+        }
+        
+        ((Spatial) ancestor).updateWorldTransform();
+        worldTransform.setTo(((Spatial) ancestor).worldTransform);
+        worldTransform.add(localTransform);
     }
     
     /**
@@ -76,7 +76,7 @@ public class Spatial<T extends Trfm> extends Bound {
      * 
      * @param worldTransform 
      */
-    public void applyTransform(T worldTransform) {
+    public void applyTransform(Trfm worldTransform) {
         this.worldTransform.setTo(worldTransform);
 
         // set flag
@@ -85,7 +85,7 @@ public class Spatial<T extends Trfm> extends Bound {
 
     @Override
     public Node clone() {
-        Spatial clone = new Spatial(is2D, name);
+        Spatial clone = new Spatial(name);
         clone.localTransform.setTo(localTransform);
 
         if(bounds != null)

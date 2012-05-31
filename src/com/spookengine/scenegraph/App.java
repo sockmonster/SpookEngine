@@ -1,11 +1,8 @@
 package com.spookengine.scenegraph;
 
-import com.spookengine.scenegraph.appearance.Alpha;
-import com.spookengine.scenegraph.appearance.Colour;
-import com.spookengine.scenegraph.appearance.LineAtt;
-import com.spookengine.scenegraph.appearance.PointAtt;
-import com.spookengine.scenegraph.appearance.PolyAtt;
-import com.spookengine.scenegraph.appearance.Texture;
+import com.spookengine.scenegraph.appearance.*;
+import com.spookengine.scenegraph.lights.Light;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -14,8 +11,8 @@ import java.util.logging.Logger;
  *
  * @author Oliver Winks
  */
-public abstract class App {
-    private static Logger logger = Logger.getLogger(App.class.getName());
+public class App {
+    private static final Logger logger = Logger.getLogger(App.class.getName());
 
     public enum LightingPolicy { GLOBAL_FIRST, LOCAL_FIRST }
     public static final int POINT_ATT = 1;
@@ -25,16 +22,30 @@ public abstract class App {
     public static final int ALPHA = 16;
     public static final int MATERIAL = 32;
     public static final int LIGHTING = 64;
-
+    
     // visual attributes
     protected int inheritance;
-    protected PointAtt pointAtt;
-    protected LineAtt lineAtt;
-    protected PolyAtt polyAtt;
-    protected Colour colour;
-    protected Alpha alpha;
-    protected List<Texture> textures;
+    public PointAtt pointAtt;
+    public LineAtt lineAtt;
+    public PolyAtt polyAtt;
+    public Colour colour;
+    public Alpha alpha;
+    public Material material;
+    protected final List<Texture> textures;
 
+    // light state
+    public LightingPolicy lightingPolicy;
+    protected final List<Light> lights;
+
+    public App() {
+        super();
+
+        textures = new ArrayList<Texture>();
+        inheritance = LIGHTING; // inherit lights by default
+        lightingPolicy = LightingPolicy.LOCAL_FIRST;
+        lights = new ArrayList<Light>();
+    }
+    
     public void setTo(App app) {
         inheritance = app.inheritance;
         pointAtt = app.pointAtt;
@@ -42,76 +53,33 @@ public abstract class App {
         polyAtt = app.polyAtt;
         colour = app.colour;
         alpha = app.alpha;
+        material = app.material;
 
         textures.clear();
         for(int i=0; i<app.textures.size(); i++)
             textures.add(app.textures.get(i));
-    }
 
-    /**
-     * Resets this App to the defulat settings.
-     *
-     * <i>
-     * This method doesn't create any garbage because all appearance
-     * attributes are shared between nodes. Therefore removing a pointer to an
-     * appearance attribute does not orphan that attribute as it is still
-     * pointed to by an App somewhere in the scenegraph!
-     * </i>
-     */
+        lightingPolicy = app.lightingPolicy;
+        lights.clear();
+        int nLights = app.lights.size();
+        for(int i=0; i<nLights; i++) {
+            lights.add(app.lights.get(i));
+        }
+    }
+    
     public void toDefault() {
-        inheritance = 0;
+        inheritance = 64; // inherit lights by default
         pointAtt = null;
         lineAtt = null;
         polyAtt = null;
         colour = null;
         alpha = null;
+        material = null;
+        
         textures.clear();
+        lights.clear();
     }
     
-    public int getInheritance() {
-        return inheritance;
-    }
-
-    public PointAtt getPointAtt() {
-        return pointAtt;
-    }
-
-    public void setPointAtt(PointAtt pointAtt) {
-        this.pointAtt = pointAtt;
-    }
-
-    public LineAtt getLineAtt() {
-        return lineAtt;
-    }
-
-    public void setLineAtt(LineAtt lineAtt) {
-        this.lineAtt = lineAtt;
-    }
-
-    public PolyAtt getPolyAtt() {
-        return polyAtt;
-    }
-
-    public void setPolyAtt(PolyAtt polyAtt) {
-        this.polyAtt = polyAtt;
-    }
-
-    public Colour getColour() {
-        return colour;
-    }
-
-    public void setColour(Colour colouring) {
-        this.colour = colouring;
-    }
-
-    public Alpha getAlpha() {
-        return alpha;
-    }
-
-    public void setAlpha(Alpha alpha) {
-        this.alpha = alpha;
-    }
-
     public void addTexture(Texture texture) {
         if(texture != null)
             textures.add(texture);
@@ -138,19 +106,84 @@ public abstract class App {
         return null;
     }
 
-    /**
-     * Add the given VisualState to this VisualState.
-     *
-     * @param appearance The VisualState to add to this VisualState.
-     */
-    public abstract void add(App app);
+    public void addLight(Light light) {
+        lights.add(light);
+    }
 
+    public void removeLight(Light light) {
+        lights.remove(light);
+    }
+
+    public Light removeLight(int i) {
+        return lights.remove(i);
+    }
+
+    public List<Light> getLights() {
+        return lights;
+    }
+    
+    public int getInheritance() {
+        return inheritance;
+    }
+    
     public void override(int options) {
         inheritance = (inheritance | options);
     }
 
     public void inherit(int options) {
         inheritance = inheritance & ~options;
+    }
+    
+    public void add(App app) {
+        if( (app.inheritance & POINT_ATT) != 0 ) {
+            inheritance |= POINT_ATT;
+            pointAtt = app.pointAtt;
+        }
+
+        if( (app.inheritance & LINE_ATT) != 0 ) {
+            inheritance |= LINE_ATT;
+            lineAtt = app.lineAtt;
+        }
+
+        if( (app.inheritance & POLY_ATT) != 0 ) {
+            inheritance |= POLY_ATT;
+            polyAtt = app.polyAtt;
+        }
+
+        if( (app.inheritance & COLOUR) != 0 ) {
+            inheritance |= COLOUR;
+            colour = app.colour;
+        }
+
+        if( (app.inheritance & MATERIAL) != 0 ) {
+            inheritance |= MATERIAL;
+            material = app.material;
+        }
+
+        if( (app.inheritance & ALPHA) != 0 ) {
+            inheritance |= ALPHA;
+            alpha = app.alpha;
+        }
+
+        // textures are not inherited!
+        textures.clear();
+        int nTextures = app.textures.size();
+        for(int i=0; i<nTextures; i++)
+            textures.add(app.textures.get(i));
+
+        int nLights = app.lights.size();
+        if( (app.inheritance & LIGHTING) != 0 ) {
+            inheritance |= LIGHTING;
+            // add local lights
+            for(int i=0; i<app.lights.size(); i++) {
+                if(!lights.contains(app.lights.get(i)))
+                    lights.add(app.lights.get(i));
+            }
+        } else {
+            lights.clear();
+            for(int i=0; i<nLights; i++)
+                lights.add(app.lights.get(i));
+        }
     }
 
 }

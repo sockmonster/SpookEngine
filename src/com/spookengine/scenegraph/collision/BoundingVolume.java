@@ -1,7 +1,5 @@
 package com.spookengine.scenegraph.collision;
 
-import com.spookengine.maths.Vec;
-import com.spookengine.maths.Vec2;
 import com.spookengine.maths.Vec3;
 import com.spookengine.scenegraph.Trfm;
 import java.nio.FloatBuffer;
@@ -11,48 +9,29 @@ import java.util.List;
  *
  * @author Oliver Winks
  */
-public abstract class BoundingVolume<V extends Vec> {
-
-    protected boolean is2D;
-    protected V localPos;
-    protected V worldPos;
-    protected V localExtent;
-    protected V worldExtent;
+public abstract class BoundingVolume {
+    
+    protected Vec3 localPos;
+    protected Vec3 worldPos;
+    protected Vec3 localExtent;
+    protected Vec3 worldExtent;
     protected FloatBuffer vertices;
 
-    protected BoundingVolume(boolean is2D) {
-        this.is2D = is2D;
-
-        if(is2D) {
-            localPos = (V) new Vec2();
-            worldPos = (V) new Vec2();
-            localExtent = (V) new Vec2();
-            worldExtent = (V) new Vec2();
-        } else {
-            localPos = (V) new Vec3();
-            worldPos = (V) new Vec3();
-            localExtent = (V) new Vec3();
-            worldExtent = (V) new Vec3();
-        }
+    protected BoundingVolume() {
+        localPos = new Vec3();
+        worldPos = new Vec3();
+        localExtent = new Vec3();
+        worldExtent = new Vec3();
     }
 
-    protected BoundingVolume(boolean is2D, Vec pos) {
-        this.is2D = is2D;
-
-        if(is2D) {
-            localPos = (V) new Vec2(pos);
-            worldPos = (V) new Vec2(pos);
-            localExtent = (V) new Vec2();
-            worldExtent = (V) new Vec2();
-        } else {
-            localPos = (V) new Vec3(pos);
-            worldPos = (V) new Vec3(pos);
-            localExtent = (V) new Vec3();
-            worldExtent = (V) new Vec3();
-        }
+    protected BoundingVolume(Vec3 pos) {
+        localPos = new Vec3(pos);
+        worldPos = new Vec3(pos);
+        localExtent = new Vec3();
+        worldExtent = new Vec3();
     }
 
-    public V getWorldPos() {
+    public Vec3 getWorldPos() {
         return worldPos;
     }
 
@@ -63,7 +42,7 @@ public abstract class BoundingVolume<V extends Vec> {
      * @return A Vector3 which represents the distance from the centre
      * of the BoundingVolume to the wall of the BoundingVolume.
      */
-    public V getLocalExtent() {
+    public Vec3 getLocalExtent() {
         return localExtent;
     }
 
@@ -78,7 +57,7 @@ public abstract class BoundingVolume<V extends Vec> {
      * @return The distance from the centre to the edge of
      * this BoundingVolume along the world axis.
      */
-    public V getWorldExtent() {
+    public Vec3 getWorldExtent() {
         return worldExtent;
     }
 
@@ -89,7 +68,7 @@ public abstract class BoundingVolume<V extends Vec> {
      * @param height The height of the bounding volume.
      * @param depth The depth of the bounding volume.
      */
-    public abstract void setSize(V dim);
+    public abstract void setSize(Vec3 dim);
 
     /**
      * Wraps the model (specified by the vertices FloatBuffer) in this bounding

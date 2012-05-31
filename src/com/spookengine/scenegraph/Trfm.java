@@ -1,88 +1,84 @@
 package com.spookengine.scenegraph;
 
-import com.spookengine.maths.Mat;
-import com.spookengine.maths.Vec;
+import com.spookengine.maths.Mat3;
+import com.spookengine.maths.Mat4;
+import com.spookengine.maths.Vec3;
 
 /**
  *
  * @author Oliver Winks
  */
-public abstract class Trfm {
-
-    protected float sc;
-    protected Vec tr;
-    protected Mat ro;
-    protected Mat at;
+public class Trfm {
+    
+    public float sc;
+    public final Vec3 tr = new Vec3();
+    public final Mat3 ro = new Mat3();
+    public final Mat4 at = new Mat4();
 
     // convenience vars
-    protected Vec pos;
-    protected Vec tmpV;
-    protected Mat tmpM;
+    private final Vec3 tmpV = new Vec3();
+    private final Mat3 tmpM3 = new Mat3();
+    private final Mat4 tmpM4 = new Mat4();
 
     public Trfm() {
-        sc = 1f;
+        toIdentity();
     }
-
+    
     public void setTo(Trfm t) {
         sc = t.sc;
         tr.setTo(t.tr);
         ro.setTo(t.ro);
         at.setTo(t.at);
     }
-
-    public void toIdentity() {
+    
+    public final void toIdentity() {
         sc = 1f;
         tr.toZeros();
         ro.toIdentity();
         at.toIdentity();
     }
+    
+    public void decompose() {
+        // scale
+        tmpV.setTo(at.m[0][0], at.m[0][1], at.m[0][2]);
+        sc = tmpV.length();
 
-    /**
-     * Decomposes the 3X3 affine transform matrix into a uniform scale, a 2X2
-     * rotation matrix and a translation vector, which are all stored in this
-     * Trfm.
-     */
-    public abstract void decompose();
+        // translate
+        tr.setTo(at.m[0][3], at.m[1][3], at.m[2][3]);
 
-    public void getPos(Vec store) {
-        store.toZeros();
-        this.apply(store);
-    }
-
-    public float getScale() {
-        return sc;
-    }
-
-    public void getTranslation(Vec store) {
-        store.setTo(tr);
+        // rotate
+        ro.setTo(
+                at.m[0][0], at.m[0][1], at.m[0][2],
+                at.m[1][0], at.m[1][1], at.m[1][2],
+                at.m[2][0], at.m[2][1], at.m[2][2]);
+        ro.mult(1.0f/sc);
     }
     
-    public Mat getAffineTransform() {
-        return at;
+    public void update() {
+        at.setTo(
+                ro.m[0][0]*sc, ro.m[0][1]*sc, ro.m[0][2]*sc, tr.v[0],
+                ro.m[1][0]*sc, ro.m[1][1]*sc, ro.m[1][2]*sc, tr.v[1],
+                ro.m[2][0]*sc, ro.m[2][1]*sc, ro.m[2][2]*sc, tr.v[2],
+                0.0f, 0.0f, 0.0f, 1.0f);
     }
-
-    public void scaleTo(float scale) {
-        sc = scale;
-    }
-
-    public void translateTo(Vec pos) {
-        tr.setTo(pos);
-    }
-
-    public void translateBy(Vec dPos) {
-        tr.add(dPos);
-    }
-
-    public abstract void update();
-
+    
     public void add(Trfm local) {
+        sc += local.sc;
+        tr.add(local.tr);
+        ro.mult(local.ro);
+        
         at.mult(local.at);
     }
 
-    public void apply(Vec vec) {
+    public void apply(Vec3 vec) {
         at.mult(vec);
     }
+    
+    public void applyInverse(Vec3 vec) {
+        tmpM4.setTo(at);
+        tmpM4.invert();
 
-    public abstract void applyInverse(Vec vec);
+        tmpM4.mult(vec);
+    }
 
 }

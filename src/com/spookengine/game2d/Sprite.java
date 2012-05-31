@@ -1,8 +1,6 @@
 package com.spookengine.game2d;
 
-import com.spookengine.scenegraph.App2;
 import com.spookengine.scenegraph.Geom;
-import com.spookengine.scenegraph.Trfm2;
 import com.spookengine.scenegraph.Trimesh;
 import com.spookengine.scenegraph.appearance.AnimTexture;
 import com.spookengine.scenegraph.appearance.Texture;
@@ -15,7 +13,7 @@ import java.util.logging.Logger;
  *
  * @author Oliver Winks
  */
-public class Sprite extends Geom<Trfm2, App2> {
+public class Sprite extends Geom {
     private static final Logger logger = Logger.getLogger(Sprite.class.getName());
 
     private float width;
@@ -26,7 +24,7 @@ public class Sprite extends Geom<Trfm2, App2> {
     private Texture tmpTexture;
 
     public Sprite(String name, Texture image) {
-        super(true, name, Trimesh.Quad(image.getWidth(0), image.getHeight(0)));
+        super(name, Trimesh.Quad(image.getWidth(0), image.getHeight(0)));
 
         width = image.getWidth(0);
         height = image.getHeight(0);
@@ -39,7 +37,7 @@ public class Sprite extends Geom<Trfm2, App2> {
     }
     
     public Sprite(String name, Texture image, float width, float height) {
-        super(true, name, Trimesh.Quad(width, height));
+        super(name, Trimesh.Quad(width, height));
 
         width = image.getWidth(0);
         height = image.getHeight(0);

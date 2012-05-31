@@ -4,33 +4,20 @@ package com.spookengine.scenegraph;
  *
  * @author Oliver Winks
  */
-public class Visual<T extends Trfm, A extends App> extends Spatial<T> {
+public class Visual extends Spatial {
 
     protected boolean hasVisualStateChanged;
-    protected A worldAppearance;
-    protected A localAppearance;
+    protected App worldAppearance;
+    protected App localAppearance;
+    public boolean isHidden;
     public int layer;
 
-    public static Visual<Trfm2, App2> new2D(String name) {
-        return new Visual<Trfm2, App2>(true, name);
-    }
-
-    public static Visual<Trfm3, App3> new3D(String name) {
-        return new Visual<Trfm3, App3>(false, name);
-    }
-
-    public Visual(boolean is2D, String name) {
-        super(is2D, name);
-
-        if(is2D) {
-            hasVisualStateChanged = true;
-            localAppearance = (A) new App2();
-            worldAppearance = (A) new App2();
-        } else {
-            hasVisualStateChanged = true;
-            localAppearance = (A) new App3();
-            worldAppearance = (A) new App3();
-        }
+    public Visual(String name) {
+        super(name);
+        
+        hasVisualStateChanged = true;
+        localAppearance = new App();
+        worldAppearance = new App();
     }
     
     public boolean hasVisualStateChanged() {
@@ -54,7 +41,7 @@ public class Visual<T extends Trfm, A extends App> extends Spatial<T> {
      *
      * @return This VisualNode's local Appearance.
      */
-    public A getLocalAppearance() {
+    public App getLocalAppearance() {
         hasVisualStateChanged = true;
         return localAppearance;
     }
@@ -70,7 +57,7 @@ public class Visual<T extends Trfm, A extends App> extends Spatial<T> {
      *
      * @return This VisualNode's world Appearance.
      */
-    public A getWorldAppearance() {
+    public App getWorldAppearance() {
         return worldAppearance;
     }
 
@@ -85,14 +72,14 @@ public class Visual<T extends Trfm, A extends App> extends Spatial<T> {
      * @param worldAppearance The Appearance to set this VisualNode's
      * Appearance to.
      */
-    public void applyAppearance(A worldAppearance) {
+    public void applyAppearance(App worldAppearance) {
         this.worldAppearance.setTo(worldAppearance);
         this.hasVisualStateChanged = true;
     }
 
     @Override
     public Node clone() {
-        Visual clone = new Visual(is2D, name);
+        Visual clone = new Visual(name);
         clone.localTransform.setTo(localTransform);
         clone.localAppearance.setTo(localAppearance);
 

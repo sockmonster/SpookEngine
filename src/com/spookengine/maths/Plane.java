@@ -35,6 +35,18 @@ public class Plane {
             normal = new Vec3();
             setTo(a, b, c);
     }
+    
+    public final Plane setTo(Vec3 a, Vec3 b, Vec3 c) {
+            temp1.setTo(c).sub(a).norm();
+            temp2.setTo(c).sub(b).norm();
+
+            ((Vec3) normal.setTo(temp1)).cross(temp2).norm();
+
+            temp1.setTo(0,0,0).sub(a);
+            D = temp1.dot(normal);
+
+            return this;
+    }
 
     public Plane setTo(Plane plane) {
             normal.setTo(plane.normal);
@@ -46,18 +58,6 @@ public class Plane {
     public Plane setTo(Vec3 normal, float D) {
             this.normal.setTo(normal);
             this.D = D;
-
-            return this;
-    }
-
-    public Plane setTo(Vec3 a, Vec3 b, Vec3 c) {
-            temp1.setTo(c).sub(a).norm();
-            temp2.setTo(c).sub(b).norm();
-
-            ((Vec3) normal.setTo(temp1)).cross(temp2).norm();
-
-            temp1.setTo(0,0,0).sub(a);
-            D = temp1.dot(normal);
 
             return this;
     }

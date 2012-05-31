@@ -1,23 +1,26 @@
 package com.spookengine.jogl;
 
 import com.jogamp.opengl.util.Animator;
-import com.spookengine.desktop.TextureLoader;
-import com.spookengine.desktop.jogl.JOGLRenderer3;
+import com.spookengine.events.Task;
+import com.spookengine.events.Task.TaskState;
+import com.spookengine.events.TaskScheduler;
 import com.spookengine.maths.Vec3;
+import com.spookengine.platform.desktop.JOGLRenderer3;
 import com.spookengine.scenegraph.*;
-import com.spookengine.scenegraph.appearance.Texture;
-import com.spookengine.scenegraph.camera.Cam3;
-import com.spookengine.scenegraph.camera.CameraMan3;
+import com.spookengine.scenegraph.appearance.Material;
+import com.spookengine.scenegraph.camera.Cam;
+import com.spookengine.scenegraph.camera.CameraMan;
+import com.spookengine.scenegraph.lights.LightBulb;
+import com.spookengine.scenegraph.lights.LightMan;
+import com.spookengine.scenegraph.renderer.Renderer;
+import com.spookengine.scenegraph.renderer.Renderer.CoordinateSystem;
 import java.awt.Frame;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.imageio.ImageIO;
 import javax.media.opengl.*;
-import javax.media.opengl.awt.GLCanvas;
 import javax.media.opengl.awt.GLJPanel;
 
 /**
@@ -26,9 +29,10 @@ import javax.media.opengl.awt.GLJPanel;
  */
 public class JOGLTest implements GLEventListener {
     
-    private Visual<Trfm3, App3> root;
-    private Geom<Trfm3, App3> floor;
-    private Cam3 cam;
+    private Visual root;
+    private CameraMan camMan;
+    private Spatial G1;
+    private Spatial G2;
     
     public static void main(String[] args) {
         JOGLTest test = new JOGLTest();
@@ -52,9 +56,6 @@ public class JOGLTest implements GLEventListener {
             }
         });
         
-        // setup scene
-        setupScene();
-        
         // start render loop
         glCanvas.addGLEventListener(this);
         
@@ -63,40 +64,81 @@ public class JOGLTest implements GLEventListener {
         animator.start();
     }
     
-    private void setupScene() {
-        root = Visual.new3D("root");
+    private void setupScene() throws IOException {
+        root = new Visual("root");
         
-        // add a camera
-        cam = new Cam3();
-        CameraMan3 camMan = new CameraMan3("camera", cam);
-        camMan.getLocalTransform().translateBy(0, 0, -5);
+        /* ******** ******** ******** */
+        /*           Camera           */
+        /* ******** ******** ******** */
+        camMan = new CameraMan("camera", new Cam());
+        camMan.getLocalTransform().tr.add( 0, 0, 0);
         camMan.updateLocalTransform();
         root.attachChild(camMan);
         
-        // build floor
-        floor = Geom.new3D("floor", Trimesh.Quad(5, 5, 5));
+        /* ******** ******** ******** */
+        /*          LIGHTING          */
+        /* ******** ******** ******** */
+        LightBulb sun = new LightBulb(0.8f, 0.8f, 0.8f);
+        sun.hasAmbience = true;
+        LightMan lm = new LightMan("sun", sun);
+        lm.getLocalTransform().tr.add(3, 7, -3);
+        lm.updateLocalTransform();
+        root.attachChild(lm);
+        root.getLocalAppearance().addLight(sun);
         
-        // colour the floor
-//        floor.getLocalAppearance().override(App.COLOUR);
-//        floor.getLocalAppearance().setColour(new Colour(1, 1, 0));
+        // Parent
+        final Spatial parent = new Spatial("parent");
+        parent.getLocalTransform().tr.setTo(4, 10, 0);
+        parent.updateLocalTransform();
+        root.attachChild(parent);
         
-        // texture the floor
-        try {
-            BufferedImage checkerboardImg = ImageIO.read(getClass().getResource("floor.png"));
-            Texture checkerBoard = TextureLoader.getInstance().loadTexture(checkerboardImg);
-            floor.getLocalAppearance().addTexture(checkerBoard);
-        } catch (IOException ex) {
-            Logger.getLogger(JOGLTest.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        Geom parentBox = new Geom("parent_box", Trimesh.Cube(2, 2, 2));
+        parentBox.getLocalAppearance().override(App.MATERIAL);
+        parentBox.getLocalAppearance().material = new Material(new float[] {0.7f, 0.2f, 0.2f});
+        parent.attachChild(parentBox);
         
-        root.attachChild(floor);
+//        // Child
+//        final Spatial child = new Spatial("child");
+//        child.getLocalTransform().tr.add(0, -3, 0);
+//        child.updateLocalTransform();
+//        parent.attachChild(child);
+//        
+//        Geom childBox = new Geom("child_box", Trimesh.Cube(1, 1, 1));
+//        childBox.getLocalAppearance().override(App.MATERIAL);
+//        childBox.getLocalAppearance().material = new Material(new float[] {0.2f, 0.2f, 0.7f});
+//        child.attachChild(childBox);
+        
+        // Behvaiour
+        TaskScheduler.getInstance().schedule(1, new Task() {
+            @Override
+            public TaskState perform(float tpf) {
+//                parent.getLocalTransform().ro.rotateByXYZ(tpf, tpf, tpf);
+//                parent.updateLocalTransform();
+                
+//                child.getLocalTransform().ro.rotateByZXY(tpf, 0, 0);
+//                child.updateLocalTransform();
+                
+//                camMan.getLocalTransform().ro.rotateBy(tpf, 1, 0, 0);
+//                camMan.updateLocalTransform();
+                
+                return TaskState.CONTINUE_RUN;
+            }
+        });
     }
 
     @Override
     public void init(GLAutoDrawable glad) {
         GL2 gl2 = glad.getGL().getGL2();
-        JOGLRenderer3.clearColour = new Vec3(0.75f, 0.75f, 0.75f);
+        Renderer.clearColour = new Vec3(1f, 0.75f, 0.75f);
+        Renderer.coordSys = CoordinateSystem.Z_UP;
         JOGLRenderer3.getInstance(gl2).onSurfaceCreated();
+        
+        // setup scene
+        try {
+            setupScene();
+        } catch (IOException ex) {
+            Logger.getLogger(JOGLTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override
@@ -108,7 +150,9 @@ public class JOGLTest implements GLEventListener {
     @Override
     public void display(GLAutoDrawable glad) {
         GL2 gl2 = glad.getGL().getGL2();
-        JOGLRenderer3.getInstance(gl2).onDrawFrame(root, cam);
+        JOGLRenderer3.getInstance(gl2).onDrawFrame(root, camMan.getCamera());
+        
+        TaskScheduler.getInstance().update();
     }
     
     @Override

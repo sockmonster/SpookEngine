@@ -2,6 +2,7 @@ package com.spookengine.scenegraph;
 
 import com.spookengine.maths.Vec2;
 import com.spookengine.maths.Vec3;
+import com.spookengine.scenegraph.renderer.Renderer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -127,12 +128,26 @@ public class Trimesh {
     public static Trimesh Triangle(float width, float height, float texRepeat) {
         float halfWidth = width/2;
         float halfHeight = height/2;
-
-        Vec3[] vertexArray = new Vec3[] {
-            new Vec3( 0,            1*halfHeight, 0),
-            new Vec3(-1*halfWidth, -1*halfHeight, 0),
-            new Vec3( 1*halfWidth, -1*halfHeight, 0)
-        };
+        
+        Vec3[] vertexArray = null;
+        switch(Renderer.coordSys) {
+            case Y_UP:
+                vertexArray = new Vec3[] {
+                    new Vec3( 0,            1*halfHeight, 0),
+                    new Vec3(-1*halfWidth, -1*halfHeight, 0),
+                    new Vec3( 1*halfWidth, -1*halfHeight, 0)
+                };
+                break;
+                
+            case Z_UP:
+                vertexArray = new Vec3[] {
+                    new Vec3( 0,            0,  1*halfHeight),
+                    new Vec3(-1*halfWidth,  0, -1*halfHeight),
+                    new Vec3( 1*halfWidth,  0, -1*halfHeight)
+                };
+                break;
+        }
+        
         Vec2[] texCoordArray = new Vec2[] {
             new Vec2(texRepeat/2f, 0        ),
             new Vec2(0           , texRepeat),
@@ -166,13 +181,40 @@ public class Trimesh {
     public static Trimesh Quad(float width, float height, float texRepeat) {
         float halfWidth = width/2;
         float halfHeight = height/2;
-
-        Vec3[] vertexArray = new Vec3[] {
-            new Vec3( halfWidth,  halfHeight, 0),
-            new Vec3(-halfWidth,  halfHeight, 0),
-            new Vec3( halfWidth, -halfHeight, 0),
-            new Vec3(-halfWidth, -halfHeight, 0)
-        };
+        
+        Vec3[] vertexArray = null;
+        Vec3[] normalArray = null;
+        switch(Renderer.coordSys) {
+            case Y_UP:
+                vertexArray = new Vec3[] {
+                    new Vec3( halfWidth,  halfHeight, 0),
+                    new Vec3(-halfWidth,  halfHeight, 0),
+                    new Vec3( halfWidth, -halfHeight, 0),
+                    new Vec3(-halfWidth, -halfHeight, 0)
+                };
+                normalArray = new Vec3[] {
+                    new Vec3( 0,  0, -1),
+                    new Vec3( 0,  0, -1),
+                    new Vec3( 0,  0, -1),
+                    new Vec3( 0,  0, -1)
+                };
+                break;
+                
+            case Z_UP:
+                vertexArray = new Vec3[] {
+                    new Vec3( halfWidth,  0,  halfHeight),
+                    new Vec3(-halfWidth,  0,  halfHeight),
+                    new Vec3( halfWidth,  0, -halfHeight),
+                    new Vec3(-halfWidth,  0, -halfHeight)
+                };
+                normalArray = new Vec3[] {
+                    new Vec3( 0, -1,  0),
+                    new Vec3( 0, -1,  0),
+                    new Vec3( 0, -1,  0),
+                    new Vec3( 0, -1,  0)
+                };
+                break;
+        }
         Vec2[] texCoordArray = new Vec2[] {
             new Vec2(0.0f     ,      0.0f),
             new Vec2(texRepeat,      0.0f),
@@ -193,32 +235,50 @@ public class Trimesh {
      * @param edges The number of edges the ellipse will contain.
      * @return A new ellipse Trimesh.
      */
-    public static Trimesh Ellipse(float width, float height, int edges) {
+    public static Trimesh Ellipse(float width, float height, int edges, boolean fill) {
         float radw = width/2f;
         float radh = height/2f;
 
 	if(edges > 2) {
             int vertices = edges + 2;
             Vec3[] vertexArray = new Vec3[vertices];
+            Vec3[] normalArray = new Vec3[vertices];
             Vec2[] texCoordArray = new Vec2[vertices];
 
-            // add central vertex
-            vertexArray[0] = new Vec3(0, 0, 0);
-            texCoordArray[0] = new Vec2(0.5f, 0.5f);
-
-            int count = 1;
+            int count = 0;
             float angle = 0;
-            for(float i=0; i<vertices-1; i++) {
-                angle += 360.0f/edges;
-                float x = (float) (radw*Math.cos(Math.toRadians(angle)));
-                float y = (float) (radh*Math.sin(Math.toRadians(angle)));
+            switch(Renderer.coordSys) {
+                case Y_UP:
+                    for(float i=0; i<vertices; i++) {
+                        angle += 360.0f/edges;
+                        float x = (float) (radw*Math.cos(Math.toRadians(angle)));
+                        float y = (float) (radh*Math.sin(Math.toRadians(angle)));
 
-                vertexArray[count] = new Vec3(x, y, 0);
-                texCoordArray[count] = new Vec2( (x + radw)/width, (y + radh)/height );
-                count++;
+                        vertexArray[count] = new Vec3( x,  y,  0);
+                        normalArray[count] = new Vec3( 0,  0, -1);
+                        texCoordArray[count] = new Vec2( (x + radw)/width, (y + radh)/height );
+                        count++;
+                    }
+                    break;
+                    
+                case Z_UP:
+                    for(float i=0; i<vertices; i++) {
+                        angle += 360.0f/edges;
+                        float x = (float) (radw*Math.cos(Math.toRadians(angle)));
+                        float z = (float) (radh*Math.sin(Math.toRadians(angle)));
+
+                        vertexArray[count] = new Vec3( x,  0,  z);
+                        normalArray[count] = new Vec3( 0, -1,  0);
+                        texCoordArray[count] = new Vec2( (x + radw)/width, (z + radh)/height );
+                        count++;
+                    }
+                    break;
             }
-
+            
             Trimesh ellipse = new Trimesh(DrawMode.TRIANGLE_FAN, vertexArray);
+            if(!fill)
+                ellipse.drawMode = DrawMode.LINE_STRIP;
+            
             ellipse.addTexCoords(texCoordArray);
             return ellipse;
         }
@@ -230,105 +290,212 @@ public class Trimesh {
         float halfWidth = width/2;
         float halfHeight = height/2;
         float halfDepth = depth/2;
+        
+        Vec3[] vertexArray = null;
+        Vec3[] normalArray = null;
+        switch(Renderer.coordSys) {
+            case Y_UP:
+                vertexArray = new Vec3[] {
+                    // front face
+                    new Vec3( halfWidth,  halfHeight, -halfDepth), // 1
+                    new Vec3(-halfWidth,  halfHeight, -halfDepth), // 2
+                    new Vec3(-halfWidth, -halfHeight, -halfDepth), // 3
+                    new Vec3( halfWidth,  halfHeight, -halfDepth), // 1
+                    new Vec3(-halfWidth, -halfHeight, -halfDepth), // 3
+                    new Vec3( halfWidth, -halfHeight, -halfDepth), // 4
 
-        Vec3[] vertexArray = new Vec3[] {
-            // front face
-            new Vec3( halfWidth,  halfHeight, -halfDepth), // 1
-            new Vec3(-halfWidth,  halfHeight, -halfDepth), // 2
-            new Vec3(-halfWidth, -halfHeight, -halfDepth), // 3
-            new Vec3( halfWidth,  halfHeight, -halfDepth), // 1
-            new Vec3(-halfWidth, -halfHeight, -halfDepth), // 3
-            new Vec3( halfWidth, -halfHeight, -halfDepth), // 4
-            
-            // back face
-            new Vec3(-halfWidth,  halfHeight,  halfDepth), // 1
-            new Vec3( halfWidth,  halfHeight,  halfDepth), // 2
-            new Vec3( halfWidth, -halfHeight,  halfDepth), // 3
-            new Vec3(-halfWidth,  halfHeight,  halfDepth), // 1
-            new Vec3( halfWidth, -halfHeight,  halfDepth), // 3
-            new Vec3(-halfWidth, -halfHeight,  halfDepth), // 4
-            
-            // right face
-            new Vec3( halfWidth,  halfHeight,  halfDepth), // 1
-            new Vec3( halfWidth,  halfHeight, -halfDepth), // 2
-            new Vec3( halfWidth, -halfHeight, -halfDepth), // 3
-            new Vec3( halfWidth,  halfHeight,  halfDepth), // 1
-            new Vec3( halfWidth, -halfHeight, -halfDepth), // 3
-            new Vec3( halfWidth, -halfHeight,  halfDepth), // 4
-            
-            // left face
-            new Vec3(-halfWidth,  halfHeight, -halfDepth), // 1
-            new Vec3(-halfWidth,  halfHeight,  halfDepth), // 2
-            new Vec3(-halfWidth, -halfHeight,  halfDepth), // 3
-            new Vec3(-halfWidth,  halfHeight, -halfDepth), // 1
-            new Vec3(-halfWidth, -halfHeight,  halfDepth), // 3
-            new Vec3(-halfWidth, -halfHeight, -halfDepth), // 4
-            
-            // top face
-            new Vec3( halfWidth,  halfHeight,  halfDepth), // 1
-            new Vec3(-halfWidth,  halfHeight,  halfDepth), // 2
-            new Vec3(-halfWidth,  halfHeight, -halfDepth), // 3
-            new Vec3( halfWidth,  halfHeight,  halfDepth), // 1
-            new Vec3(-halfWidth,  halfHeight, -halfDepth), // 3
-            new Vec3( halfWidth,  halfHeight, -halfDepth), // 4
-            
-            // bottom face
-            new Vec3( halfWidth, -halfHeight, -halfDepth), // 1
-            new Vec3(-halfWidth, -halfHeight, -halfDepth), // 2
-            new Vec3(-halfWidth, -halfHeight,  halfDepth), // 3
-            new Vec3( halfWidth, -halfHeight, -halfDepth), // 1
-            new Vec3(-halfWidth, -halfHeight,  halfDepth), // 3
-            new Vec3( halfWidth, -halfHeight,  halfDepth)  // 4
-        };
-        Vec3[] normalArray = new Vec3[] {
-            // front face
-            new Vec3( 0,  0, -1), // 1
-            new Vec3( 0,  0, -1), // 2
-            new Vec3( 0,  0, -1), // 3
-            new Vec3( 0,  0, -1), // 1
-            new Vec3( 0,  0, -1), // 3
-            new Vec3( 0,  0, -1), // 4
-            
-            // back face
-            new Vec3( 0,  0,  1), // 1
-            new Vec3( 0,  0,  1), // 2
-            new Vec3( 0,  0,  1), // 3
-            new Vec3( 0,  0,  1), // 1
-            new Vec3( 0,  0,  1), // 3
-            new Vec3( 0,  0,  1), // 4
-            
-            // right face
-            new Vec3( 1,  0,  0), // 1
-            new Vec3( 1,  0,  0), // 2
-            new Vec3( 1,  0,  0), // 3
-            new Vec3( 1,  0,  0), // 1
-            new Vec3( 1,  0,  0), // 3
-            new Vec3( 1,  0,  0), // 4
-            
-            // left face
-            new Vec3(-1,  0,  0), // 1
-            new Vec3(-1,  0,  0), // 2
-            new Vec3(-1,  0,  0), // 3
-            new Vec3(-1,  0,  0), // 1
-            new Vec3(-1,  0,  0), // 3
-            new Vec3(-1,  0,  0), // 4
-            
-            // top face
-            new Vec3( 0,  1,  0), // 1
-            new Vec3( 0,  1,  0), // 2
-            new Vec3( 0,  1,  0), // 3
-            new Vec3( 0,  1,  0), // 1
-            new Vec3( 0,  1,  0), // 3
-            new Vec3( 0,  1,  0), // 4
-            
-            // bottom face
-            new Vec3( 0, -1,  0), // 1
-            new Vec3( 0, -1,  0), // 2
-            new Vec3( 0, -1,  0), // 3
-            new Vec3( 0, -1,  0), // 1
-            new Vec3( 0, -1,  0), // 3
-            new Vec3( 0, -1,  0), // 4
-        };
+                    // back face
+                    new Vec3(-halfWidth,  halfHeight,  halfDepth), // 1
+                    new Vec3( halfWidth,  halfHeight,  halfDepth), // 2
+                    new Vec3( halfWidth, -halfHeight,  halfDepth), // 3
+                    new Vec3(-halfWidth,  halfHeight,  halfDepth), // 1
+                    new Vec3( halfWidth, -halfHeight,  halfDepth), // 3
+                    new Vec3(-halfWidth, -halfHeight,  halfDepth), // 4
+
+                    // right face
+                    new Vec3( halfWidth,  halfHeight,  halfDepth), // 1
+                    new Vec3( halfWidth,  halfHeight, -halfDepth), // 2
+                    new Vec3( halfWidth, -halfHeight, -halfDepth), // 3
+                    new Vec3( halfWidth,  halfHeight,  halfDepth), // 1
+                    new Vec3( halfWidth, -halfHeight, -halfDepth), // 3
+                    new Vec3( halfWidth, -halfHeight,  halfDepth), // 4
+
+                    // left face
+                    new Vec3(-halfWidth,  halfHeight, -halfDepth), // 1
+                    new Vec3(-halfWidth,  halfHeight,  halfDepth), // 2
+                    new Vec3(-halfWidth, -halfHeight,  halfDepth), // 3
+                    new Vec3(-halfWidth,  halfHeight, -halfDepth), // 1
+                    new Vec3(-halfWidth, -halfHeight,  halfDepth), // 3
+                    new Vec3(-halfWidth, -halfHeight, -halfDepth), // 4
+
+                    // top face
+                    new Vec3( halfWidth,  halfHeight,  halfDepth), // 1
+                    new Vec3(-halfWidth,  halfHeight,  halfDepth), // 2
+                    new Vec3(-halfWidth,  halfHeight, -halfDepth), // 3
+                    new Vec3( halfWidth,  halfHeight,  halfDepth), // 1
+                    new Vec3(-halfWidth,  halfHeight, -halfDepth), // 3
+                    new Vec3( halfWidth,  halfHeight, -halfDepth), // 4
+
+                    // bottom face
+                    new Vec3( halfWidth, -halfHeight, -halfDepth), // 1
+                    new Vec3(-halfWidth, -halfHeight, -halfDepth), // 2
+                    new Vec3(-halfWidth, -halfHeight,  halfDepth), // 3
+                    new Vec3( halfWidth, -halfHeight, -halfDepth), // 1
+                    new Vec3(-halfWidth, -halfHeight,  halfDepth), // 3
+                    new Vec3( halfWidth, -halfHeight,  halfDepth)  // 4
+                };
+                normalArray = new Vec3[] {
+                    // front face
+                    new Vec3( 0,  0, -1), // 1
+                    new Vec3( 0,  0, -1), // 2
+                    new Vec3( 0,  0, -1), // 3
+                    new Vec3( 0,  0, -1), // 1
+                    new Vec3( 0,  0, -1), // 3
+                    new Vec3( 0,  0, -1), // 4
+
+                    // back face
+                    new Vec3( 0,  0,  1), // 1
+                    new Vec3( 0,  0,  1), // 2
+                    new Vec3( 0,  0,  1), // 3
+                    new Vec3( 0,  0,  1), // 1
+                    new Vec3( 0,  0,  1), // 3
+                    new Vec3( 0,  0,  1), // 4
+
+                    // right face
+                    new Vec3( 1,  0,  0), // 1
+                    new Vec3( 1,  0,  0), // 2
+                    new Vec3( 1,  0,  0), // 3
+                    new Vec3( 1,  0,  0), // 1
+                    new Vec3( 1,  0,  0), // 3
+                    new Vec3( 1,  0,  0), // 4
+
+                    // left face
+                    new Vec3(-1,  0,  0), // 1
+                    new Vec3(-1,  0,  0), // 2
+                    new Vec3(-1,  0,  0), // 3
+                    new Vec3(-1,  0,  0), // 1
+                    new Vec3(-1,  0,  0), // 3
+                    new Vec3(-1,  0,  0), // 4
+
+                    // top face
+                    new Vec3( 0,  1,  0), // 1
+                    new Vec3( 0,  1,  0), // 2
+                    new Vec3( 0,  1,  0), // 3
+                    new Vec3( 0,  1,  0), // 1
+                    new Vec3( 0,  1,  0), // 3
+                    new Vec3( 0,  1,  0), // 4
+
+                    // bottom face
+                    new Vec3( 0, -1,  0), // 1
+                    new Vec3( 0, -1,  0), // 2
+                    new Vec3( 0, -1,  0), // 3
+                    new Vec3( 0, -1,  0), // 1
+                    new Vec3( 0, -1,  0), // 3
+                    new Vec3( 0, -1,  0), // 4
+                };
+                break;
+                
+            case Z_UP:
+                vertexArray = new Vec3[] {
+                    // front face
+                    new Vec3( halfWidth, -halfDepth,  halfHeight), // 1
+                    new Vec3(-halfWidth, -halfDepth,  halfHeight), // 2
+                    new Vec3(-halfWidth, -halfDepth, -halfHeight), // 3
+                    new Vec3( halfWidth, -halfDepth,  halfHeight), // 1
+                    new Vec3(-halfWidth, -halfDepth, -halfHeight), // 3
+                    new Vec3( halfWidth, -halfDepth, -halfHeight), // 4
+
+                    // back face
+                    new Vec3(-halfWidth, halfDepth,  halfHeight), // 1
+                    new Vec3( halfWidth, halfDepth,  halfHeight), // 2
+                    new Vec3( halfWidth, halfDepth, -halfHeight), // 3
+                    new Vec3(-halfWidth, halfDepth,  halfHeight), // 1
+                    new Vec3( halfWidth, halfDepth, -halfHeight), // 3
+                    new Vec3(-halfWidth, halfDepth, -halfHeight), // 4
+
+                    // right face
+                    new Vec3( halfWidth,  halfDepth,  halfHeight), // 1
+                    new Vec3( halfWidth, -halfDepth,  halfHeight), // 2
+                    new Vec3( halfWidth, -halfDepth, -halfHeight), // 3
+                    new Vec3( halfWidth,  halfDepth,  halfHeight), // 1
+                    new Vec3( halfWidth, -halfDepth, -halfHeight), // 3
+                    new Vec3( halfWidth,  halfDepth, -halfHeight), // 4
+
+                    // left face
+                    new Vec3(-halfWidth, -halfDepth,  halfHeight), // 1
+                    new Vec3(-halfWidth,  halfDepth,  halfHeight), // 2
+                    new Vec3(-halfWidth,  halfDepth, -halfHeight), // 3
+                    new Vec3(-halfWidth, -halfDepth,  halfHeight), // 1
+                    new Vec3(-halfWidth,  halfDepth, -halfHeight), // 3
+                    new Vec3(-halfWidth, -halfDepth, -halfHeight), // 4
+
+                    // top face
+                    new Vec3( halfWidth,  halfDepth,  halfHeight), // 1
+                    new Vec3(-halfWidth,  halfDepth,  halfHeight), // 2
+                    new Vec3(-halfWidth, -halfDepth,  halfHeight), // 3
+                    new Vec3( halfWidth,  halfDepth,  halfHeight), // 1
+                    new Vec3(-halfWidth, -halfDepth,  halfHeight), // 3
+                    new Vec3( halfWidth, -halfDepth,  halfHeight), // 4
+
+                    // bottom face
+                    new Vec3( halfWidth, -halfDepth, -halfHeight), // 1
+                    new Vec3(-halfWidth, -halfDepth, -halfHeight), // 2
+                    new Vec3(-halfWidth,  halfDepth, -halfHeight), // 3
+                    new Vec3( halfWidth, -halfDepth, -halfHeight), // 1
+                    new Vec3(-halfWidth,  halfDepth, -halfHeight), // 3
+                    new Vec3( halfWidth,  halfDepth, -halfHeight)  // 4
+                };
+                normalArray = new Vec3[] {
+                    // front face
+                    new Vec3( 0, -1,  0), // 1
+                    new Vec3( 0, -1,  0), // 2
+                    new Vec3( 0, -1,  0), // 3
+                    new Vec3( 0, -1,  0), // 1
+                    new Vec3( 0, -1,  0), // 3
+                    new Vec3( 0, -1,  0), // 4
+
+                    // back face
+                    new Vec3( 0,  1,  0), // 1
+                    new Vec3( 0,  1,  0), // 2
+                    new Vec3( 0,  1,  0), // 3
+                    new Vec3( 0,  1,  0), // 1
+                    new Vec3( 0,  1,  0), // 3
+                    new Vec3( 0,  1,  0), // 4
+
+                    // right face
+                    new Vec3( 1,  0,  0), // 1
+                    new Vec3( 1,  0,  0), // 2
+                    new Vec3( 1,  0,  0), // 3
+                    new Vec3( 1,  0,  0), // 1
+                    new Vec3( 1,  0,  0), // 3
+                    new Vec3( 1,  0,  0), // 4
+
+                    // left face
+                    new Vec3(-1,  0,  0), // 1
+                    new Vec3(-1,  0,  0), // 2
+                    new Vec3(-1,  0,  0), // 3
+                    new Vec3(-1,  0,  0), // 1
+                    new Vec3(-1,  0,  0), // 3
+                    new Vec3(-1,  0,  0), // 4
+
+                    // top face
+                    new Vec3( 0,  0,  1), // 1
+                    new Vec3( 0,  0,  1), // 2
+                    new Vec3( 0,  0,  1), // 3
+                    new Vec3( 0,  0,  1), // 1
+                    new Vec3( 0,  0,  1), // 3
+                    new Vec3( 0,  0,  1), // 4
+
+                    // bottom face
+                    new Vec3( 0,  0, -1), // 1
+                    new Vec3( 0,  0, -1), // 2
+                    new Vec3( 0,  0, -1), // 3
+                    new Vec3( 0,  0, -1), // 1
+                    new Vec3( 0,  0, -1), // 3
+                    new Vec3( 0,  0, -1), // 4
+                };
+                break;
+        }
         Vec2[] texCoordArray = new Vec2[] {
             // front face
             new Vec2(1.0f, 1.0f),
@@ -378,6 +545,8 @@ public class Trimesh {
             new Vec2(0.0f, 0.0f),
             new Vec2(1.0f, 0.0f),
         };
+        
+        System.out.println(Renderer.coordSys);
 
         Trimesh quad = new Trimesh(DrawMode.TRIANGLES, vertexArray, normalArray);
         quad.addTexCoords(texCoordArray);

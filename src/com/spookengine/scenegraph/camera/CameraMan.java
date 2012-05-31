@@ -3,8 +3,9 @@ package com.spookengine.scenegraph.camera;
 import com.spookengine.maths.Vec3;
 import com.spookengine.scenegraph.Node;
 import com.spookengine.scenegraph.Spatial;
-import com.spookengine.scenegraph.Trfm3;
+import com.spookengine.scenegraph.Trfm;
 import com.spookengine.scenegraph.collision.BoundingVolume;
+import com.spookengine.scenegraph.renderer.Renderer;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -13,23 +14,34 @@ import java.util.logging.Logger;
  *
  * @author Oliver Winks
  */
-public class CameraMan3 extends Spatial<Trfm3> {
+public class CameraMan extends Spatial {
+    private static final Logger logger = Logger.getLogger(CameraMan.class.getName());
     
-    private Logger logger = Logger.getLogger(CameraMan3.class.getName());
     public boolean fixLookAt;
     protected Vec3 worldLookAt;
     protected Vec3 worldDir;
     protected Vec3 worldUp;
-    private Cam3 cam;
+    private Cam cam;
 
-    public CameraMan3(String name, Cam3 camera) {
-        super(false, name);
+    public CameraMan(String name, Cam camera) {
+        super(name);
+        
+        this.cam = camera;
         
         fixLookAt = false;
         worldLookAt = new Vec3();
-        worldDir = new Vec3(0,0,1);
-        worldUp = new Vec3(0,1,0);
-        this.cam = camera;
+        
+        switch(Renderer.coordSys) {
+            case Y_UP:
+                worldDir = new Vec3(0,0,1);
+                worldUp = new Vec3(0,1,0);
+                break;
+                
+            case Z_UP:
+                worldDir = new Vec3(0,1,0);
+            worldUp = new Vec3(0,0,1);
+                break;
+        }
     }
 
     @Override
@@ -78,11 +90,11 @@ public class CameraMan3 extends Spatial<Trfm3> {
         return worldUp;
     }
 
-    public void setCamera(Cam3 camera) {
+    public void setCamera(Cam camera) {
         this.cam = camera;
     }
 
-    public Cam3 getCamera() {
+    public Cam getCamera() {
         return cam;
     }
 
@@ -94,7 +106,7 @@ public class CameraMan3 extends Spatial<Trfm3> {
     }
 
     @Override
-    public void applyTransform(Trfm3 worldTransform) {
+    public void applyTransform(Trfm worldTransform) {
         super.applyTransform(worldTransform);
 
         // calculate camera pos
@@ -102,13 +114,23 @@ public class CameraMan3 extends Spatial<Trfm3> {
         this.worldTransform.apply(cam.pos);
         
         if(!fixLookAt) {
+            switch(Renderer.coordSys) {
+                case Y_UP:
+                    worldUp.setTo(0,1,0);
+                    worldLookAt.setTo(0,0,1);
+                    break;
+                    
+                case Z_UP:
+                    worldUp.setTo(0,0,1);
+                    worldLookAt.setTo(0,1,0);
+                    break;
+            }
+            
             // calculate up vector
-            worldUp.setTo(0,1,0);
             this.worldTransform.apply(worldUp);
             worldUp.sub(cam.pos).norm(); // testing
 
             // calculate lookat vector
-            worldLookAt.setTo(0,0,1);
             this.worldTransform.apply(worldLookAt);
         } else {
             // TODO: CALCULATE UP VECTOR!

@@ -1,4 +1,4 @@
-package com.spookengine.desktop;
+package com.spookengine.platform.desktop;
 
 import com.spookengine.scenegraph.appearance.Texture;
 import java.awt.Graphics2D;

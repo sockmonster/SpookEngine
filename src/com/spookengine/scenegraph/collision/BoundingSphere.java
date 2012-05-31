@@ -1,7 +1,5 @@
 package com.spookengine.scenegraph.collision;
 
-import com.spookengine.maths.Vec;
-import com.spookengine.maths.Vec2;
 import com.spookengine.maths.Vec3;
 import com.spookengine.scenegraph.Trfm;
 import java.nio.FloatBuffer;
@@ -11,61 +9,33 @@ import java.util.List;
  *
  * @author Oliver Winks
  */
-public class BoundingSphere<V extends Vec> extends BoundingVolume<V> {
+public class BoundingSphere extends BoundingVolume {
 
     private float normalRadius; // pre-scale radius
     private float radius;
 
     // convenience vars
-    private V tmpV0;
-    private V tmpV1;
-    private V tmpV2;
+    private Vec3 tmpV0;
+    private Vec3 tmpV1;
+    private Vec3 tmpV2;
 
-    public static BoundingSphere<Vec2> new2D() {
-        return new BoundingSphere<Vec2>(true);
+    public BoundingSphere() {
+        super();
+        
+        tmpV0 = new Vec3();
+        tmpV1 = new Vec3();
+        tmpV2 = new Vec3();
     }
 
-    public static BoundingSphere<Vec2> new2D(Vec2 pos, float rad) {
-        return new BoundingSphere<Vec2>(true, pos, rad);
-    }
-
-    public static BoundingSphere<Vec3> new3D() {
-        return new BoundingSphere<Vec3>(false);
-    }
-
-    public static BoundingSphere<Vec3> new3D(Vec3 pos, float rad) {
-        return new BoundingSphere<Vec3>(false, pos, rad);
-    }
-
-    public BoundingSphere(boolean is2D) {
-        super(is2D);
-
-        if(is2D) {
-            tmpV0 = (V) new Vec2();
-            tmpV1 = (V) new Vec2();
-            tmpV2 = (V) new Vec2();
-        } else {
-            tmpV0 = (V) new Vec3();
-            tmpV1 = (V) new Vec3();
-            tmpV2 = (V) new Vec2();
-        }
-    }
-
-    public BoundingSphere(boolean is2D, Vec pos, float rad) {
-        super(is2D, pos);
+    public BoundingSphere(Vec3 pos, float rad) {
+        super(pos);
 
         normalRadius = rad;
         radius = rad;
-
-        if(is2D) {
-            tmpV0 = (V) new Vec2();
-            tmpV1 = (V) new Vec2();
-            tmpV2 = (V) new Vec2();
-        } else {
-            tmpV0 = (V) new Vec3();
-            tmpV1 = (V) new Vec3();
-            tmpV2 = (V) new Vec2();
-        }
+        
+        tmpV0 = new Vec3();
+        tmpV1 = new Vec3();
+        tmpV2 = new Vec3();
     }
 
     /**
@@ -75,7 +45,7 @@ public class BoundingSphere<V extends Vec> extends BoundingVolume<V> {
      * @param dim
      */
     @Override
-    public void setSize(V dim) {
+    public void setSize(Vec3 dim) {
         // find the circle's radius
         normalRadius = dim.v[0]/2;
         radius = normalRadius;
@@ -125,8 +95,8 @@ public class BoundingSphere<V extends Vec> extends BoundingVolume<V> {
 
         normalRadius = (float) Math.sqrt(dist2)/2;
         radius = normalRadius;
-        localExtent.setTo(radius);
-        worldExtent.setTo(radius);
+        localExtent.setTo(radius, radius, radius);
+        worldExtent.setTo(radius, radius, radius);
     }
 
     @Override
@@ -140,13 +110,12 @@ public class BoundingSphere<V extends Vec> extends BoundingVolume<V> {
             tmpV0.v[i] = Float.MAX_VALUE;
             tmpV1.v[i] = -Float.MAX_VALUE;
         }
-
-        float v = 0;
+        
         for(int count=from; count<to; count++) {
             tmpV2.setTo(bounds.get(count).getWorldExtent());
 
             for(int i=0; i<tmpV2.v.length; i++) {
-                v = bounds.get(count).getWorldPos().v[i];
+                float v = bounds.get(count).getWorldPos().v[i];
                 if(v - tmpV2.v[i] < tmpV0.v[i])
                     tmpV0.v[i] = v - tmpV2.v[0];
                 if(v + tmpV2.v[0] > tmpV1.v[i])
@@ -164,8 +133,8 @@ public class BoundingSphere<V extends Vec> extends BoundingVolume<V> {
             max = Math.max(max, tmpV1.v[i] - tmpV0.v[i]);
         normalRadius = max/2;
         radius = normalRadius;
-        localExtent.setTo(radius);
-        worldExtent.setTo(radius);
+        localExtent.setTo(radius, radius, radius);
+        worldExtent.setTo(radius, radius, radius);
     }
 
     @Override
@@ -173,9 +142,9 @@ public class BoundingSphere<V extends Vec> extends BoundingVolume<V> {
         worldPos.setTo(localPos);
         worldTransform.apply(worldPos);
 
-        radius = normalRadius*worldTransform.getScale();
-        localExtent.setTo(radius);
-        worldExtent.setTo(radius);
+        radius = normalRadius*worldTransform.sc;
+        localExtent.setTo(radius, radius, radius);
+        worldExtent.setTo(radius, radius, radius);
     }
 
     @Override
@@ -190,7 +159,7 @@ public class BoundingSphere<V extends Vec> extends BoundingVolume<V> {
 
     @Override
     public BoundingVolume clone() {
-        BoundingSphere clone = new BoundingSphere(is2D);
+        BoundingSphere clone = new BoundingSphere();
         clone.localPos.setTo(localPos);
         clone.worldPos.setTo(worldPos);
         clone.localExtent.setTo(localExtent);

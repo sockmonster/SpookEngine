@@ -6,27 +6,19 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * The GeomLeaf2 class extends VisualN, it is a leaf node and therefore
+ * The Geom class extends Visual, it is a leaf node and therefore
  * cannot have other Node's attached to it. It holds a trimesh which can be
  * rendered by the Renderer.
  * 
  * @author Oliver Winks
  */
-public class Geom<T extends Trfm, A extends App> extends Visual<T, A> {
-
+public class Geom extends Visual {
     private static final Logger logger = Logger.getLogger(Geom.class.getName());
+    
     protected Trimesh trimesh;
 
-    public static Geom<Trfm2, App2> new2D(String name, Trimesh trimesh) {
-        return new Geom<Trfm2, App2>(true, name, trimesh);
-    }
-
-    public static Geom<Trfm3, App3> new3D(String name, Trimesh trimesh) {
-        return new Geom<Trfm3, App3>(false, name, trimesh);
-    }
-
-    public Geom(boolean is2D, String name, Trimesh trimesh) {
-        super(is2D, name);
+    public Geom(String name, Trimesh trimesh) {
+        super(name);
 
         this.trimesh = trimesh;
     }
@@ -107,7 +99,7 @@ public class Geom<T extends Trfm, A extends App> extends Visual<T, A> {
     @Override
     public Node clone() {
         // create a clone with an instance of this trimesh
-        Geom clone = new Geom(is2D, name, trimesh);
+        Geom clone = new Geom(name, trimesh);
         clone.localTransform.setTo(localTransform);
         clone.localAppearance.setTo(localAppearance);
 

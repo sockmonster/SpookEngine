@@ -1,6 +1,7 @@
 package com.spookengine.scenegraph.lights;
 
 import com.spookengine.maths.Vec3;
+import com.spookengine.scenegraph.renderer.Renderer;
 
 /**
  * A SpotLight.
@@ -18,8 +19,17 @@ public class SpotLight extends LightBulb {
 
     public SpotLight() {
         super();
-
-        dir = new Vec3(0,0,1);
+        
+        switch(Renderer.coordSys) {
+            case Y_UP:
+                dir = new Vec3( 0, 0, 1);
+                break;
+                
+            case Z_UP:
+                dir = new Vec3( 0, 1, 0);
+                break;
+        }
+        
         setAngle(40.0f);
         setFocus(30.0f);
     }
@@ -27,7 +37,16 @@ public class SpotLight extends LightBulb {
     public SpotLight(float angle, float focus) {
         super();
 
-        dir = new Vec3(0,0,1);
+        switch(Renderer.coordSys) {
+            case Y_UP:
+                dir = new Vec3( 0, 0, 1);
+                break;
+                
+            case Z_UP:
+                dir = new Vec3( 0, 1, 0);
+                break;
+        }
+        
         setAngle(angle);
         setFocus(focus);
     }
@@ -35,7 +54,16 @@ public class SpotLight extends LightBulb {
     public SpotLight(float[] rgbArray, float angle, float focus) {
         super(rgbArray);
 
-        dir = new Vec3(0,0,1);
+        switch(Renderer.coordSys) {
+            case Y_UP:
+                dir = new Vec3( 0, 0, 1);
+                break;
+                
+            case Z_UP:
+                dir = new Vec3( 0, 1, 0);
+                break;
+        }
+        
         setAngle(angle);
         setFocus(focus);
     }
@@ -43,7 +71,16 @@ public class SpotLight extends LightBulb {
     public SpotLight(float r, float g, float b, float angle, float focus) {
         super(r, g, b);
 
-        dir = new Vec3(0,0,1);
+        switch(Renderer.coordSys) {
+            case Y_UP:
+                dir = new Vec3( 0, 0, 1);
+                break;
+                
+            case Z_UP:
+                dir = new Vec3( 0, 1, 0);
+                break;
+        }
+        
         setAngle(angle);
         setFocus(focus);
     }
