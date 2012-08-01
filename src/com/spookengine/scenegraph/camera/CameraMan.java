@@ -5,7 +5,6 @@ import com.spookengine.scenegraph.Node;
 import com.spookengine.scenegraph.Spatial;
 import com.spookengine.scenegraph.Trfm;
 import com.spookengine.scenegraph.collision.BoundingVolume;
-import com.spookengine.scenegraph.renderer.Renderer;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,17 +30,8 @@ public class CameraMan extends Spatial {
         fixLookAt = false;
         worldLookAt = new Vec3();
         
-        switch(Renderer.coordSys) {
-            case Y_UP:
-                worldDir = new Vec3(0,0,1);
-                worldUp = new Vec3(0,1,0);
-                break;
-                
-            case Z_UP:
-                worldDir = new Vec3(0,1,0);
-            worldUp = new Vec3(0,0,1);
-                break;
-        }
+        worldDir = new Vec3(0,1,0);
+        worldUp = new Vec3(0,0,1);
     }
 
     @Override
@@ -114,17 +104,8 @@ public class CameraMan extends Spatial {
         this.worldTransform.apply(cam.pos);
         
         if(!fixLookAt) {
-            switch(Renderer.coordSys) {
-                case Y_UP:
-                    worldUp.setTo(0,1,0);
-                    worldLookAt.setTo(0,0,1);
-                    break;
-                    
-                case Z_UP:
-                    worldUp.setTo(0,0,1);
-                    worldLookAt.setTo(0,1,0);
-                    break;
-            }
+            worldUp.setTo(0,0,1);
+            worldLookAt.setTo(0,1,0);
             
             // calculate up vector
             this.worldTransform.apply(worldUp);

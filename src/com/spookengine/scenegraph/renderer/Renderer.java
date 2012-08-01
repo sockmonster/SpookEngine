@@ -15,12 +15,6 @@ import java.util.logging.Logger;
 public abstract class Renderer {
     private static final Logger logger = Logger.getLogger(Renderer.class.getName());
     
-    public enum CoordinateSystem {
-        Y_UP,   // +X right,    +Y up,          +Z into screen
-        Z_UP    // +X right,    +Y into screen  +Z up
-    }
-    
-    public static CoordinateSystem coordSys = CoordinateSystem.Y_UP;
     public static boolean renderBounds;
     public static int canvasWidth;
     public static int canvasHeight;

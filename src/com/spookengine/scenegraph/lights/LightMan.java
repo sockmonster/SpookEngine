@@ -24,29 +24,13 @@ public class LightMan extends Spatial {
     public LightMan(String name) {
         super(name);
         
-        switch(Renderer.coordSys) {
-            case Y_UP:
-                worldDir = new Vec3( 0, 0, 1);
-                break;
-                
-            case Z_UP:
-                worldDir = new Vec3( 0, 1, 0);
-                break;
-        }
+        worldDir = new Vec3( 0, 1, 0);
     }
 
     public LightMan(String name, LightBulb light) {
         super(name);
         
-        switch(Renderer.coordSys) {
-            case Y_UP:
-                worldDir = new Vec3( 0, 0, 1);
-                break;
-                
-            case Z_UP:
-                worldDir = new Vec3( 0, 1, 0);
-                break;
-        }
+        worldDir = new Vec3( 0, 1, 0);
         this.light = light;
     }
 
@@ -104,15 +88,7 @@ public class LightMan extends Spatial {
 
         if(light instanceof SpotLight) {
             // update direction
-            switch(Renderer.coordSys) {
-                case Y_UP:
-                    worldDir = new Vec3( 0, 0, 1);
-                    break;
-
-                case Z_UP:
-                    worldDir = new Vec3( 0, 1, 0);
-                    break;
-            }
+            worldDir = new Vec3( 0, 1, 0);
             this.worldTransform.apply(worldDir);
 
             // set light direction

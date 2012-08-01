@@ -6,7 +6,6 @@ import com.spookengine.maths.Plane;
 import com.spookengine.maths.Vec3;
 import com.spookengine.scenegraph.collision.BoundingSphere;
 import com.spookengine.scenegraph.collision.BoundingVolume;
-import com.spookengine.scenegraph.renderer.Renderer;
 
 // TODO: REMEMBER WHEN SWITCHING SCENES THE NEW SCENE MUST HAVE IT'S CAMERA'S
 // onCanvasChange() METHOD CALLED SO THAT THE ASPECT RATIO CAN BE RECALCULATED
@@ -90,17 +89,8 @@ public class Cam {
         fbl = new Vec3();
         fbr = new Vec3();
         
-        switch(Renderer.coordSys) {
-            case Y_UP:
-                pos = new Vec3(0,0,1);
-                up = new Vec3(0,1,0);
-                break;
-                
-            case Z_UP:
-                pos = new Vec3(0,1,0);
-                up = new Vec3(0,0,1);
-                break;
-        }
+        pos = new Vec3(0,1,0);
+        up = new Vec3(0,0,1);
         lookAt = new Vec3(0,0,0);
     }
 
@@ -139,8 +129,8 @@ public class Cam {
         fbl = new Vec3();
         fbr = new Vec3();
 
-        pos = new Vec3(0,0,1);
-        up = new Vec3(0,1,0);
+        pos = new Vec3(0,1,0);
+        up = new Vec3(0,0,1);
         lookAt = new Vec3(0,0,0);
     }
     
@@ -273,18 +263,18 @@ public class Cam {
 
         // compute the Z axis of camera
         // this axis points in the opposite direction from the looking direction
-        z.setTo(pos).sub(lookAt).norm();
+        y.setTo(pos).sub(lookAt).norm();
 
         // X axis of camera with given "up" vector and Z axis
-        x.setTo(up).cross(z).norm();
+        x.setTo(up).cross(y).norm();
 
         // the real "up" vector is the cross product of Z and X
-        y.setTo(z).cross(x);
+        z.setTo(y).cross(x);
 
         // near plane
-        tmp4.setTo(z).mult(nearClip);
+        tmp4.setTo(y).mult(nearClip);
         tmp1.setTo(pos).sub(tmp4);
-        tmp2.setTo(y).mult(nh);
+        tmp2.setTo(z).mult(nh);
         tmp3.setTo(x).mult(nw);
         ntl.setTo(tmp1).add(tmp2).sub(tmp3);
         ntr.setTo(tmp1).add(tmp2).add(tmp3);
@@ -292,9 +282,9 @@ public class Cam {
         nbr.setTo(tmp1).sub(tmp2).add(tmp3);
 
         // far plane
-        tmp4.setTo(z).mult(farClip);
+        tmp4.setTo(y).mult(farClip);
         tmp1.setTo(pos).sub(tmp4);
-        tmp2.setTo(y).mult(fh);
+        tmp2.setTo(z).mult(fh);
         tmp3.setTo(x).mult(fw);
         ftl.setTo(tmp1).add(tmp2).sub(tmp3);
         ftr.setTo(tmp1).add(tmp2).add(tmp3);
@@ -356,24 +346,11 @@ public class Cam {
         tmp2.setTo(tmp1).cross(up).norm();  // (side)
         tmp3.setTo(up);                     // (up)
         
-        switch(Renderer.coordSys) {
-            case Y_UP:
-                modelView.setTo(
-                    -tmp2.v[0], -tmp2.v[1], -tmp2.v[2],   pos.dot(tmp2),
-                     tmp3.v[0],  tmp3.v[1],  tmp3.v[2],  -pos.dot(tmp3),
-                    -tmp1.v[0], -tmp1.v[1], -tmp1.v[2],   pos.dot(tmp1),
-                    0.0f,    0.0f,    0.0f,     1.0f);
-                break;
-                
-            case Z_UP:
-                modelView.setTo(
-                     tmp2.v[0],  tmp2.v[1],  tmp2.v[2],  -pos.dot(tmp2),
-                     tmp3.v[0],  tmp3.v[1],  tmp3.v[2],  -pos.dot(tmp3),
-                    -tmp1.v[0], -tmp1.v[1], -tmp1.v[2],   pos.dot(tmp1),
-                    0.0f,    0.0f,    0.0f,     1.0f);
-                break;
-        
-        }
+        modelView.setTo(
+            tmp2.v[0],  tmp2.v[1],  tmp2.v[2], -pos.dot(tmp2),
+            tmp3.v[0],  tmp3.v[1],  tmp3.v[2], -pos.dot(tmp3),
+           -tmp1.v[0], -tmp1.v[1], -tmp1.v[2],  pos.dot(tmp1),
+                 0.0f,       0.0f,       0.0f,          1.0f);
     }
     
     public void update() {

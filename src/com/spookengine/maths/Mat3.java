@@ -9,6 +9,7 @@ public class Mat3 {
     // convenience vars
     private final int dim = 3;
     private Mat3 tmpM;
+    private Mat3 tmpRot;
     
     public final float[][] m = new float[dim][dim];
     
@@ -329,9 +330,9 @@ public class Mat3 {
 
         if(angle > 0.0f) {
             if(angle < Math.PI) {
-                axis.v[0] = m[1][2] - m[2][1];
-                axis.v[1] = m[2][0] - m[0][2];
-                axis.v[2] = m[0][1] - m[1][0];
+                axis.v[0] = m[2][1] - m[1][2];
+                axis.v[1] = m[0][2] - m[2][0];
+                axis.v[2] = m[1][0] - m[0][1];
                 axis.norm();
             } else {
                 // angle is PI
@@ -378,49 +379,76 @@ public class Mat3 {
             axis.v[2] = 0.0f;
         }
 
-        return FastMath.toDegrees(angle);
+        return angle;
     }
 
-    public void getRotationXYZ(Vec3 store) {
-        if(m[0][2] < +1) {
-            if(m[0][2] > -1) {
-                store.v[1] = (float) Math.asin(m[0][2]);
-                store.v[0] = (float) Math.atan2(-m[1][2], m[2][2]);
-                store.v[2] = (float) Math.atan2(-m[0][1], m[0][0]);
-            } else {
-                store.v[1] = (float) (-Math.PI/2);
-                store.v[0] = (float) (-Math.atan2(m[1][0], m[1][1]));
-                store.v[2] = 0f;
-            }
-        } else {
-            store.v[1] = (float) (Math.PI/2);
-            store.v[0] = (float) (Math.atan2(m[1][0], m[1][1]));
-            store.v[2] = 0f;
-        }
-    }
-
-    public void getRotationYXZ(Vec3 store) {
-        if(m[1][2] < +1) {
-            if(m[1][2] > -1) {
-                store.v[0] = (float) Math.asin(-m[1][2]);
-                store.v[1] = (float) Math.atan2(m[0][2], m[2][2]);
-                store.v[2] = (float) Math.atan2(m[1][0], m[1][1]);
-            } else {
-                // Not a unique solution!
-                store.v[0] = (float) (Math.PI/2);
-                store.v[1] = (float) -Math.atan2(-m[0][1], m[0][0]);
-                store.v[2] = 0;
-            }
-        } else {
-            // Not a unique solution!
-            store.v[0] = (float) (-Math.PI/2);
-            store.v[1] = (float) Math.atan2(-m[0][1], m[0][0]);
-            store.v[2] = 0;
-        }
+    public void getRotationPRY(Euler euler) {
+        /*
+         *     |  cy*cr   -sy*cp + cy*sr*sp   -sy*-sp + cy*sr*cp   |
+         * PRY=|  sy*cr    cy*cp + sy*sr*sp    cy*-sp + sy*sr*cp   |
+         *     |  -sr      cr*sp               cr*cp               |
+         */
+        if(m[2][0] > 0.9999) { // singularity at north pole
+            euler.pitch = (float)  Math.atan2(-m[0][1], -m[0][2]);
+            euler.roll  = (float) -Math.PI/2;
+            euler.yaw   = 0;
+            return;
+	} else if(m[2][0] < -0.9999) { // singularity at south pole
+            euler.pitch = (float)  Math.atan2(-m[0][1],  m[0][2]);
+            euler.roll  = (float)  Math.PI/2;
+            euler.yaw   = 0;
+            return;
+	}
+        
+        euler.pitch = (float)  Math.atan2(m[2][1], m[2][2]);
+        euler.roll  = (float) -Math.asin(m[2][0]);
+        euler.yaw   = (float)  Math.atan2(m[1][0], m[0][0]);
     }
     
-    public void getRotationZXY(Vec3 store) {
-        // TODO: Not implemented yet!
+    public void getRotationYPR(Euler euler) {
+        /*
+         *     |    cr*cy + sr*sp*sy    cr*-sy + sr*sp*cy    sr*cp    |
+         * YPR=|    cp*sy               cp*cy               -sp       |
+         *     |   -sr*cy + cr*sp*sy   -sr*-sy + cr*sp*cy    cr*cp    |
+         */
+        if(m[1][2] > 0.9999) { // singularity at north pole
+            euler.yaw   = (float)  Math.atan2(m[0][1], m[0][0]);
+            euler.pitch = (float) -Math.PI/2;
+            euler.roll  = 0;
+            return;
+	} else if(m[1][2] < -0.9999) { // singularity at south pole
+            euler.yaw   = (float)  Math.atan2(-m[0][1],  m[0][0]);
+            euler.pitch = (float)  Math.PI/2;
+            euler.roll  = 0;
+            return;
+	}
+        
+        euler.yaw   = (float)  Math.atan2(m[1][0], m[1][1]);
+        euler.pitch = (float) -Math.asin(m[1][2]);
+        euler.roll  = (float)  Math.atan2(m[0][2], m[2][2]);
+    }
+    
+    public void getRotationRPY(Euler euler) {
+        /*
+         *     |    cy*cr + -sy*-sp*-sr    -sy*cp    cy*sr + -sy*-sp*cr    |
+         * RPY=|    sy*cr +  cy*-sp*-sr     cy*cp    sy*sr +  cy*-sp*cr    |
+         *     |    cp*-sr                  sp       cp*cr                 |
+         */
+        if(m[2][1] > 0.999) { // singularity at north pole
+            euler.roll   = (float) Math.atan2(m[0][2], m[0][0]);
+            euler.pitch = (float) Math.PI/2;
+            euler.yaw  = 0;
+            return;
+	} else if(m[2][1] < -0.999) { // singularity at south pole
+            euler.roll   = (float) Math.atan2(m[0][2],  m[0][0]);
+            euler.pitch = (float) -Math.PI/2;
+            euler.yaw  = 0;
+            return;
+	}
+        
+        euler.roll  = (float)  Math.atan2(-m[2][0],  m[2][2] );
+        euler.pitch = (float)  Math.asin( m[2][1] );
+        euler.yaw   = (float)  Math.atan2(-m[0][1],  m[1][1] );
     }
 
     private void rotate(float angle, float x, float y, float z) {
@@ -456,30 +484,8 @@ public class Mat3 {
     public void rotateTo(float angle, Vec3 axis) {
         rotate(angle, axis.x(), axis.y(), axis.z());
     }
-    
-    public void rotateBy(float angle, float x, float y, float z) {
-        if(tmpM == null)
-            tmpM = new Mat3();
-        
-        // store the rotation delta in a temporary matrix
-        tmpM.rotate(angle, x, y, z);
-        
-        // multiply rotation delta with current rotation matix
-        mult(tmpM);
-    }
-    
-    public void rotateBy(float angle, Vec3 axis) {
-        if(tmpM == null)
-            tmpM = new Mat3();
-        
-        // store the rotation delta in a temporary matrix
-        tmpM.rotate(angle, axis.x(), axis.y(), axis.z());
-        
-        // multiply rotation delta with current rotation matix
-        mult(tmpM);
-    }
 
-    private void rotateXYZ(float pitch, float yaw, float roll) {
+    private void rotatePRY(float pitch, float roll, float yaw) {
         /* 
          * The conversion from Euler angles to rotation matrix is calculated as 
          * follows: 
@@ -487,15 +493,15 @@ public class Mat3 {
          * The rotation matrices for each axis
          *   i.e.
          *          |   1       0       0   |
-         *        X=|   0     cos(x) -sin(x)|
-         *          |   0     sin(x)  cos(x)|
+         *        P=|   0     cos(p) -sin(p)|
+         *          |   0     sin(p)  cos(p)|
          * 
-         *          | cos(y)    0     sin(y)|
-         *        Y=|   0       1       0   |
-         *          |-sin(y)    0     cos(y)|
+         *          | cos(r)    0     sin(r)|
+         *        R=|   0       1       0   |
+         *          |-sin(r)    0     cos(r)|
          * 
-         *          | cos(z) -sin(z)    0   |
-         *        Z=| sin(z)  cos(z)    0   |
+         *          | cos(y) -sin(y)    0   |
+         *        Y=| sin(y)  cos(y)    0   |
          *          |   0       0       1   |
          * 
          * are multiplied in the order of rotation for the Euler angles. In the 
@@ -516,47 +522,25 @@ public class Mat3 {
 
         // rotate around X then Y then Z
         m[0][0] = cy*cr;
-        m[0][1] = cy*-sr;
-        m[0][2] = sy;
-        m[1][0] = -sp*-sy*cr + cp*sr;
-        m[1][1] = -sp*-sy*-sr + cp*cr;
-        m[1][2] = -sp*cy;
-        m[2][0] = cp*-sy*cr + sp*sr;
-        m[2][1] = cp*-sy*-sr + sp*cr;
-        m[2][2] = cp*cy;
+        m[0][1] = -sy*cp + cy*sr*sp;
+        m[0][2] = -sy*-sp + cy*sr*cp;
+        m[1][0] = sy*cr;
+        m[1][1] = cy*cp + sy*sr*sp;
+        m[1][2] = cy*-sp + sy*sr*cp;
+        m[2][0] = -sr;
+        m[2][1] = cr*sp;
+        m[2][2] = cr*cp;
     }
     
-    public void rotateToXYZ(float pitch, float yaw, float roll) {
-        rotateXYZ(pitch, yaw, roll);
+    public void rotateToPRY(float pitch, float roll, float yaw) {
+        rotatePRY(pitch, roll, yaw);
     }
 
-    public void rotateToXYZ(Vec3 rot) {
-        rotateXYZ(rot.x(), rot.y(), rot.z());
-    }
-
-    public void rotateByXYZ(float pitch, float yaw, float roll) {
-        if(tmpM == null)
-            tmpM = new Mat3();
-        
-        // store the rotation delta in a temporary matrix
-        tmpM.rotateXYZ(pitch, yaw, roll);
-        
-        // multiply rotation delta with current rotation matix
-        mult(tmpM);
+    public void rotateToPRY(Euler euler) {
+        rotatePRY(euler.pitch, euler.roll, euler.yaw);
     }
     
-    public void rotateByXYZ(Vec3 rot) {
-        if(tmpM == null)
-            tmpM = new Mat3();
-        
-        // store the rotation delta in a temporary matrix
-        tmpM.rotateByXYZ(rot.x(), rot.y(), rot.z());
-        
-        // multiply rotation delta with current rotation matix
-        mult(tmpM);
-    }
-    
-    private void rotateYXZ(float pitch, float yaw, float roll) {
+    private void rotateYPR(float yaw, float pitch, float roll) {
         /* 
          * The conversion from Euler angles to rotation matrix is calculated as 
          * follows: 
@@ -564,15 +548,15 @@ public class Mat3 {
          * The rotation matrices for each axis
          *   i.e.
          *          |   1       0       0   |
-         *        X=|   0     cos(x) -sin(x)|
-         *          |   0     sin(x)  cos(x)|
+         *        P=|   0     cos(p) -sin(p)|
+         *          |   0     sin(p)  cos(p)|
          * 
-         *          | cos(y)    0     sin(y)|
-         *        Y=|   0       1       0   |
-         *          |-sin(y)    0     cos(y)|
+         *          | cos(r)    0     sin(r)|
+         *        R=|   0       1       0   |
+         *          |-sin(r)    0     cos(r)|
          * 
-         *          | cos(z) -sin(z)    0   |
-         *        Z=| sin(z)  cos(z)    0   |
+         *          | cos(y) -sin(y)    0   |
+         *        Y=| sin(y)  cos(y)    0   |
          *          |   0       0       1   |
          * 
          * are multiplied in the order of rotation for the Euler angles. In the 
@@ -591,49 +575,27 @@ public class Mat3 {
         float sr = FastMath.sin(roll);
         float cr = FastMath.cos(roll);
 
-        // rotate around Y then X then Z
-        m[0][0] = cy*cr + sy*sp*sr;
-        m[0][1] = cy*-sr + sy*sp*cr;
-        m[0][2] = sy*cp;
-        m[1][0] = cp*sr;
-        m[1][1] = cp*cr;
+        // rotate around Z then X then Y
+        m[0][0] = cr*cy + sr*sp*sy;
+        m[0][1] = cr*-sy + sr*sp*cy;
+        m[0][2] = sr*cp;
+        m[1][0] = cp*sy;
+        m[1][1] = cp*cy;
         m[1][2] = -sp;
-        m[2][0] = -sy*cr + cy*sp*sr;
-        m[2][1] = -sy*-sr + cy*sp*cr;
-        m[2][2] = cy*cp;
+        m[2][0] = -sr*cy + cr*sp*sy;
+        m[2][1] = -sr*-sy + cr*sp*cy;
+        m[2][2] = cr*cp;
     }
     
-    public void rotateToYXZ(float pitch, float yaw, float roll) {
-        rotateYXZ(pitch, yaw, roll);
+    public void rotateToYPR(float yaw, float pitch, float roll) {
+        rotateYPR(yaw, pitch, roll);
     }
 
-    public void rotateToYXZ(Vec3 rot) {
-        rotateYXZ(rot.x(), rot.y(), rot.z());
-    }
-
-    public void rotateByYXZ(float pitch, float yaw, float roll) {
-        if(tmpM == null)
-            tmpM = new Mat3();
-        
-        // store the rotation delta in a temporary matrix
-        tmpM.rotateYXZ(pitch, yaw, roll);
-        
-        // multiply rotation delta with current rotation matix
-        mult(tmpM);
+    public void rotateToYPR(Euler euler) {
+        rotateYPR(euler.yaw, euler.pitch, euler.roll);
     }
     
-    public void rotateByYXZ(Vec3 rot) {
-        if(tmpM == null)
-            tmpM = new Mat3();
-        
-        // store the rotation delta in a temporary matrix
-        tmpM.rotateYXZ(rot.x(), rot.y(), rot.z());
-        
-        // multiply rotation delta with current rotation matix
-        mult(tmpM);
-    }
-    
-    private void rotateZXY(float pitch, float yaw, float roll) {
+    private void rotateRPY(float roll, float pitch, float yaw) {
         /* 
          * The conversion from Euler angles to rotation matrix is calculated as 
          * follows: 
@@ -641,15 +603,15 @@ public class Mat3 {
          * The rotation matrices for each axis
          *   i.e.
          *          |   1       0       0   |
-         *        X=|   0     cos(x) -sin(x)|
-         *          |   0     sin(x)  cos(x)|
+         *        P=|   0     cos(p) -sin(p)|
+         *          |   0     sin(p)  cos(p)|
          * 
-         *          | cos(y)    0     sin(y)|
-         *        Y=|   0       1       0   |
-         *          |-sin(y)    0     cos(y)|
+         *          | cos(r)    0     sin(r)|
+         *        R=|   0       1       0   |
+         *          |-sin(r)    0     cos(r)|
          * 
-         *          | cos(z) -sin(z)    0   |
-         *        Z=| sin(z)  cos(z)    0   |
+         *          | cos(y) -sin(y)    0   |
+         *        Y=| sin(y)  cos(y)    0   |
          *          |   0       0       1   |
          * 
          * are multiplied in the order of rotation for the Euler angles. In the 
@@ -669,45 +631,23 @@ public class Mat3 {
         float cr = FastMath.cos(roll);
         
         // rotate around Z then X then Y
-        m[0][0] = cr*cy + -sr*-sp*-sy;
-        m[0][1] = -sr*cp;
-        m[0][2] = cr*sy + -sr*-sp*cy;
-        m[1][0] = sr*cy + cr*-sp*-sy;
-        m[1][1] = cr*cp;
-        m[1][2] = sr*sy + cr*-sp*cy;
-        m[2][0] = cp*-sy;
+        m[0][0] = cy*cr + -sy*-sp*-sr;
+        m[0][1] = -sy*cp;
+        m[0][2] = cy*sr + -sy*-sp*cr;
+        m[1][0] = sy*cr + cy*-sp*-sr;
+        m[1][1] = cy*cp;
+        m[1][2] = sy*sr + cy*-sp*cr;
+        m[2][0] = cp*-sr;
         m[2][1] = sp;
-        m[2][2] = cp*cy;
+        m[2][2] = cp*cr;
     }
     
-    public void rotateToZXY(float pitch, float yaw, float roll) {
-        rotateZXY(pitch, yaw, roll);
+    public void rotateToRPY(float roll, float pitch, float yaw) {
+        rotateRPY(roll, pitch, yaw);
     }
     
-    public void rotateToZXY(Vec3 rot) {
-        rotateZXY(rot.x(), rot.y(), rot.z());
-    }
-    
-    public void rotateByZXY(float pitch, float yaw, float roll) {
-        if(tmpM == null)
-            tmpM = new Mat3();
-        
-        // store the rotation delta in a temporary matrix
-        tmpM.rotateZXY(pitch, yaw, roll);
-        
-        // multiply rotation delta with current rotation matix
-        mult(tmpM);
-    }
-    
-    public void rotateByZXY(Vec3 rot) {
-        if(tmpM == null)
-            tmpM = new Mat3();
-        
-        // store the rotation delta in a temporary matrix
-        tmpM.rotateZXY(rot.x(), rot.y(), rot.z());
-        
-        // multiply rotation delta with current rotation matix
-        mult(tmpM);
+    public void rotateToRPY(Euler euler) {
+        rotateRPY(euler.roll, euler.pitch, euler.yaw);
     }
     
     @Override

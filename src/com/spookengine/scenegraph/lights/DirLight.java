@@ -1,7 +1,6 @@
 package com.spookengine.scenegraph.lights;
 
 import com.spookengine.maths.Vec3;
-import com.spookengine.scenegraph.renderer.Renderer;
 
 /**
  *
@@ -14,15 +13,7 @@ public class DirLight extends Light {
     public DirLight() {
         super();
         
-        switch(Renderer.coordSys) {
-            case Y_UP:
-                dir = new Vec3( 0, -1,  0);
-                break;
-                
-            case Z_UP:
-                dir = new Vec3( 0,  0, -1);
-                break;
-        }
+        dir = new Vec3( 0,  0, -1);
     }
 
     public DirLight(float[] rgbArray, Vec3 dir) {

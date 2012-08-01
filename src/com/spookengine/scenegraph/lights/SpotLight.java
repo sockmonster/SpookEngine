@@ -1,7 +1,6 @@
 package com.spookengine.scenegraph.lights;
 
 import com.spookengine.maths.Vec3;
-import com.spookengine.scenegraph.renderer.Renderer;
 
 /**
  * A SpotLight.
@@ -20,15 +19,7 @@ public class SpotLight extends LightBulb {
     public SpotLight() {
         super();
         
-        switch(Renderer.coordSys) {
-            case Y_UP:
-                dir = new Vec3( 0, 0, 1);
-                break;
-                
-            case Z_UP:
-                dir = new Vec3( 0, 1, 0);
-                break;
-        }
+        dir = new Vec3( 0, 1, 0);
         
         setAngle(40.0f);
         setFocus(30.0f);
@@ -37,15 +28,7 @@ public class SpotLight extends LightBulb {
     public SpotLight(float angle, float focus) {
         super();
 
-        switch(Renderer.coordSys) {
-            case Y_UP:
-                dir = new Vec3( 0, 0, 1);
-                break;
-                
-            case Z_UP:
-                dir = new Vec3( 0, 1, 0);
-                break;
-        }
+        dir = new Vec3( 0, 1, 0);
         
         setAngle(angle);
         setFocus(focus);
@@ -54,15 +37,7 @@ public class SpotLight extends LightBulb {
     public SpotLight(float[] rgbArray, float angle, float focus) {
         super(rgbArray);
 
-        switch(Renderer.coordSys) {
-            case Y_UP:
-                dir = new Vec3( 0, 0, 1);
-                break;
-                
-            case Z_UP:
-                dir = new Vec3( 0, 1, 0);
-                break;
-        }
+        dir = new Vec3( 0, 1, 0);
         
         setAngle(angle);
         setFocus(focus);
@@ -70,16 +45,8 @@ public class SpotLight extends LightBulb {
 
     public SpotLight(float r, float g, float b, float angle, float focus) {
         super(r, g, b);
-
-        switch(Renderer.coordSys) {
-            case Y_UP:
-                dir = new Vec3( 0, 0, 1);
-                break;
-                
-            case Z_UP:
-                dir = new Vec3( 0, 1, 0);
-                break;
-        }
+        
+        dir = new Vec3( 0, 1, 0);
         
         setAngle(angle);
         setFocus(focus);
