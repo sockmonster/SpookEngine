@@ -281,18 +281,15 @@ public class Mat3 {
     }
 
     public float determinant() {
-        float t00 = m[1][1]*m[2][2] - m[1][2]*m[2][1];
-        float t10 = m[2][1]*m[2][0] - m[1][0]*m[2][2];
-        float t20 = m[1][0]*m[2][1] - m[1][1]*m[2][0];
+        float a = m[0][0]; float b = m[1][0]; float c = m[2][0];
+        float d = m[0][1]; float e = m[1][1]; float f = m[2][1];
+        float g = m[0][2]; float h = m[1][2]; float i = m[2][2];
         
-        return m[0][0]*t00 + m[0][1]*t10 + m[0][2]*t20;
+        return a*e*i + b*f*g + c*d*h - c*e*g - b*d*i - a*f*h;
     }
 
     public Mat3 invert() {
-        float t00 = m[1][1]*m[2][2] - m[1][2]*m[2][1];
-        float t10 = m[2][1]*m[2][0] - m[1][0]*m[2][2];
-        float t20 = m[1][0]*m[2][1] - m[1][1]*m[2][0];
-        float det = m[0][0]*t00 + m[0][1]*t10 + m[0][2]*t20;
+        float det = determinant();
 
         if(FastMath.abs(det) <= 0) {
             toZeros();
@@ -303,15 +300,17 @@ public class Mat3 {
         if(tmpM == null)
             tmpM = new Mat3();
         
-        tmpM.m[0][0] = m[1][1]*m[2][2] - m[1][2]*m[2][1];
-        tmpM.m[0][1] = m[0][2]*m[2][1] - m[0][1]*m[2][2];
-        tmpM.m[0][2] = m[0][1]*m[1][2] - m[0][2]*m[1][1];
-        tmpM.m[1][0] = m[1][2]*m[2][0] - m[1][0]*m[2][2];
-        tmpM.m[1][1] = m[0][0]*m[2][2] - m[0][2]*m[2][0];
-        tmpM.m[1][2] = m[0][2]*m[1][0] - m[0][0]*m[1][2];
-        tmpM.m[2][0] = m[1][0]*m[2][1] - m[1][1]*m[2][0];
-        tmpM.m[2][1] = m[0][1]*m[2][0] - m[0][0]*m[2][1];
-        tmpM.m[2][2] = m[0][0]*m[1][1] - m[0][1]*m[1][0];
+        transpose();
+        
+        tmpM.m[0][0] = +1*(m[1][1]*m[2][2] - m[2][1]*m[1][2]);
+        tmpM.m[0][1] = -1*(m[1][0]*m[2][2] - m[1][2]*m[2][0]);
+        tmpM.m[0][2] = +1*(m[1][0]*m[2][1] - m[1][1]*m[2][0]);
+        tmpM.m[1][0] = -1*(m[0][1]*m[2][2] - m[0][2]*m[2][1]);
+        tmpM.m[1][1] = +1*(m[0][0]*m[2][2] - m[0][2]*m[2][0]);
+        tmpM.m[1][2] = -1*(m[0][0]*m[2][1] - m[0][1]*m[2][0]);
+        tmpM.m[2][0] = +1*(m[0][1]*m[1][2] - m[0][2]*m[1][1]);
+        tmpM.m[2][1] = -1*(m[0][0]*m[1][2] - m[0][2]*m[1][0]);
+        tmpM.m[2][2] = +1*(m[0][0]*m[1][1] - m[0][1]*m[1][0]);
 
         float one_over_det = 1.0f/det;
         setTo(tmpM);

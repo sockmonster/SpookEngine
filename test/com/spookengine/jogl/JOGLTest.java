@@ -92,17 +92,20 @@ public class JOGLTest implements GLEventListener {
         try {
             testBox = ObjLoader.getInstance().loadModel("/com/spookengine/jogl/", "TestCube.obj");
             testBox.getLocalTransform().tr.setTo(-1, 10, 0);
-//            testBox.getLocalTransform().ro.rotateToPRY(FastMath.toRadians(0), FastMath.toRadians(90), FastMath.toRadians(0));
+            testBox.getLocalTransform().ro.rotateToYPR(FastMath.toRadians(0), FastMath.toRadians(0), FastMath.toRadians(0));
             testBox.updateLocalTransform();
-//            
-//            // get rotation
+            
+            // get rotation
 //            Euler euler = new Euler();
-//            testBox.getLocalTransform().ro.getRotationPRY(euler);
+//            testBox.getLocalTransform().ro.getRotationYPR(euler);
 //            System.out.println(euler);
-//            
+            Mat3 inverse = new Mat3(testBox.getLocalTransform().ro);
+            inverse.invert();
+            
             mirrorBox = ObjLoader.getInstance().loadModel("/com/spookengine/jogl/", "TestCube.obj");
             mirrorBox.getLocalTransform().tr.setTo(1, 10, 0);
 //            mirrorBox.getLocalTransform().ro.rotateToPRY(euler);
+            mirrorBox.getLocalTransform().ro.setTo(inverse);
             mirrorBox.updateLocalTransform();
             
             root.attachChild(testBox);
@@ -118,14 +121,17 @@ public class JOGLTest implements GLEventListener {
             @Override
             public TaskState perform(float tpf) {
                 angle += tpf;
-                testBox.getLocalTransform().ro.rotateToRPY(angle, angle, angle);
+                testBox.getLocalTransform().ro.rotateToYPR(angle, angle, 0);
                 testBox.updateLocalTransform();
                 
                 // get rotation
-                Euler euler = new Euler();
-                testBox.getLocalTransform().ro.getRotationRPY(euler);
-                
-                mirrorBox.getLocalTransform().ro.rotateToRPY(euler);
+//                Euler euler = new Euler();
+//                testBox.getLocalTransform().ro.getRotationRPY(euler);
+                Mat3 inverse = new Mat3(testBox.getLocalTransform().ro);
+                inverse.invert();
+//                
+//                mirrorBox.getLocalTransform().ro.rotateToRPY(euler);
+                mirrorBox.getLocalTransform().ro.setTo(inverse);
                 mirrorBox.updateLocalTransform();
                 
                 return TaskState.CONTINUE_RUN;
