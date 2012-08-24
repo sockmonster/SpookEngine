@@ -3,9 +3,9 @@ package com.spookengine.scenegraph.collision;
 import com.spookengine.events.EventHandler;
 import com.spookengine.scenegraph.Bound;
 import com.spookengine.scenegraph.Node;
+import com.spookengine.scenegraph.collision.CollisionEvent.EventType;
 import java.util.LinkedList;
 import java.util.List;
-import static com.spookengine.scenegraph.collision.CollisionEvent.*;
 
 /**
  * The CollisionDetector checks the scenegraph's bounding volume hierarchy for

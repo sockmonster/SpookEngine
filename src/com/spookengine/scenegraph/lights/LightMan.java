@@ -5,7 +5,6 @@ import com.spookengine.scenegraph.Node;
 import com.spookengine.scenegraph.Spatial;
 import com.spookengine.scenegraph.Trfm;
 import com.spookengine.scenegraph.collision.BoundingVolume;
-import com.spookengine.scenegraph.renderer.Renderer;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;

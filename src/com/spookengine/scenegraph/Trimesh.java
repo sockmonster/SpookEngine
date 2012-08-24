@@ -2,7 +2,6 @@ package com.spookengine.scenegraph;
 
 import com.spookengine.maths.Vec2;
 import com.spookengine.maths.Vec3;
-import com.spookengine.scenegraph.renderer.Renderer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
