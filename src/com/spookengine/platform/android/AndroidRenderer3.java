@@ -1,16 +1,18 @@
 package com.spookengine.platform.android;
 
+import com.spookengine.core.Trimesh;
+import com.spookengine.core.Geom;
 import android.opengl.GLU;
-import static com.spookengine.scenegraph.App.*;
+import static com.spookengine.scenegraph.appearance.App.*;
 import com.spookengine.scenegraph.*;
 import com.spookengine.scenegraph.appearance.PolyAtt.CullFace;
 import com.spookengine.scenegraph.appearance.*;
-import com.spookengine.scenegraph.camera.Cam;
-import com.spookengine.scenegraph.lights.DirLight;
-import com.spookengine.scenegraph.lights.Light;
-import com.spookengine.scenegraph.lights.LightBulb;
-import com.spookengine.scenegraph.lights.SpotLight;
-import com.spookengine.scenegraph.renderer.Renderer;
+import com.spookengine.core.camera.Cam;
+import com.spookengine.core.lights.DirLight;
+import com.spookengine.core.lights.Light;
+import com.spookengine.core.lights.LightBulb;
+import com.spookengine.core.lights.SpotLight;
+import com.spookengine.core.renderer.Renderer;
 import java.nio.FloatBuffer;
 import java.util.List;
 import java.util.logging.Level;

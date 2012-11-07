@@ -1,7 +1,7 @@
-package com.spookengine.scenegraph;
+package com.spookengine.scenegraph.appearance;
 
 import com.spookengine.scenegraph.appearance.*;
-import com.spookengine.scenegraph.lights.Light;
+import com.spookengine.core.lights.Light;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;

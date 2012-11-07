@@ -1,8 +1,9 @@
-package com.spookengine.scenegraph.renderer;
+package com.spookengine.core.renderer;
 
+import com.spookengine.scenegraph.appearance.App;
 import com.spookengine.maths.Vec3;
 import com.spookengine.scenegraph.*;
-import com.spookengine.scenegraph.camera.Cam;
+import com.spookengine.core.camera.Cam;
 import com.spookengine.scenegraph.collision.BoundingVolume;
 import java.util.Stack;
 import java.util.logging.Level;

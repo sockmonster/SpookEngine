@@ -1,5 +1,7 @@
 package com.spookengine.scenegraph;
 
+import com.spookengine.scenegraph.appearance.App;
+
 /**
  *
  * @author Oliver Winks

@@ -1,4 +1,4 @@
-package com.spookengine.scenegraph;
+package com.spookengine.core;
 
 import com.spookengine.maths.Vec2;
 import com.spookengine.maths.Vec3;

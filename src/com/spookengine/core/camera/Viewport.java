@@ -1,4 +1,4 @@
-package com.spookengine.scenegraph.camera;
+package com.spookengine.core.camera;
 
 import com.spookengine.maths.Vec2;
 
@@ -22,7 +22,7 @@ public class Viewport {
         dim = new Vec2();
     }
 
-    public Viewport(boolean isFixed, Vec2 pos, Vec2 dim) {
+    public Viewport(boolean isFixed) {
         this.isFixed = false;
         relativePos = new Vec2(0,0);
         relativeDim = new Vec2(1,1);
@@ -70,7 +70,10 @@ public class Viewport {
     }
 
     public void onCanvasChanged(int width, int height) {
-        if(!isFixed) {
+        if(isFixed) {
+            this.pos.setTo(0, 0);
+            this.dim.setTo(width, height);
+        } else if(!isFixed) {
             this.pos.setTo(relativePos.v[0]*width, relativePos.v[1]*height);
             this.dim.setTo(relativeDim.v[0]*width, relativeDim.v[1]*height);
         }

@@ -1,4 +1,4 @@
-package com.spookengine.scenegraph.lights;
+package com.spookengine.core.lights;
 
 import com.spookengine.maths.Vec3;
 import com.spookengine.scenegraph.Node;

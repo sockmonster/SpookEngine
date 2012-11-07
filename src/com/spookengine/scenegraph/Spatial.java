@@ -66,6 +66,8 @@ public class Spatial extends Bound {
         ((Spatial) ancestor).updateWorldTransform();
         worldTransform.setTo(((Spatial) ancestor).worldTransform);
         worldTransform.add(localTransform);
+        
+        hasTransformed = false;
     }
     
     /**

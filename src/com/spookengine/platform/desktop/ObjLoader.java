@@ -2,9 +2,9 @@ package com.spookengine.platform.desktop;
 
 import com.spookengine.maths.Vec2;
 import com.spookengine.maths.Vec3;
-import com.spookengine.scenegraph.App;
-import com.spookengine.scenegraph.Geom;
-import com.spookengine.scenegraph.Trimesh;
+import com.spookengine.scenegraph.appearance.App;
+import com.spookengine.core.Geom;
+import com.spookengine.core.Trimesh;
 import com.spookengine.scenegraph.Visual;
 import com.spookengine.scenegraph.appearance.Alpha;
 import com.spookengine.scenegraph.appearance.Colour;

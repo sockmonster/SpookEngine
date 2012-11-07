@@ -1,17 +1,23 @@
 package com.spookengine.platform.desktop;
 
-import static com.spookengine.scenegraph.App.*;
-import com.spookengine.scenegraph.*;
+import com.spookengine.core.Geom;
+import com.spookengine.core.Trimesh;
+import com.spookengine.core.camera.Cam;
+import com.spookengine.core.lights.DirLight;
+import com.spookengine.core.lights.Light;
+import com.spookengine.core.lights.LightBulb;
+import com.spookengine.core.lights.SpotLight;
+import com.spookengine.core.renderer.Renderer;
+import com.spookengine.scenegraph.Spatial;
+import com.spookengine.scenegraph.Trfm;
+import com.spookengine.scenegraph.Visual;
+import static com.spookengine.scenegraph.appearance.App.*;
 import com.spookengine.scenegraph.appearance.PolyAtt.CullFace;
 import com.spookengine.scenegraph.appearance.*;
-import com.spookengine.scenegraph.camera.Cam;
-import com.spookengine.scenegraph.lights.DirLight;
-import com.spookengine.scenegraph.lights.Light;
-import com.spookengine.scenegraph.lights.LightBulb;
-import com.spookengine.scenegraph.lights.SpotLight;
-import com.spookengine.scenegraph.renderer.Renderer;
 import java.nio.FloatBuffer;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.media.opengl.GL2;
@@ -23,7 +29,7 @@ import javax.media.opengl.glu.GLU;
  */
 public class JOGLRenderer3 extends Renderer {
     private static final Logger logger = Logger.getLogger(JOGLRenderer3.class.getName());
-    private static JOGLRenderer3 instance;
+    private static Map<String, JOGLRenderer3> instances = new HashMap<String, JOGLRenderer3>();
     
     private GL2 gl;
     private GLU glu;
@@ -39,18 +45,21 @@ public class JOGLRenderer3 extends Renderer {
     private float[] AT = new float[16];
     private float[] CAM_AT = new float[16];
     
-    public static JOGLRenderer3 getInstance(GL2 gl) {
-        if(instance == null) {
-            instance = new JOGLRenderer3();
+    public static JOGLRenderer3 getInstance(String name, GL2 gl) {
+        JOGLRenderer3 renderer = instances.get(name);
+        if(renderer == null) {
+            renderer = new JOGLRenderer3();
+            instances.put(name, renderer);
             
-            instance.worldTransform = new Trfm();
-            instance.worldAppearance = new App();
+            renderer.worldTransform = new Trfm();
+            renderer.worldAppearance = new App();
         }
         
-        instance.gl = gl;
-        instance.glu = new GLU();
         
-        return instance;
+        renderer.gl = gl;
+        renderer.glu = new GLU();
+        
+        return renderer;
     }
     
     private JOGLRenderer3() {
@@ -104,18 +113,31 @@ public class JOGLRenderer3 extends Renderer {
         }
 
         // projection matrix
-        Cam cam3 = (Cam) cam;
-        if(camera != cam || cam3.frustumChanged) {
+        if(camera != cam || cam.frustumChanged) {
             gl.glMatrixMode(GL2.GL_PROJECTION);
             gl.glLoadIdentity();
-            glu.gluPerspective(
-                    cam3.getFOV(),
-                    cam3.getAspectRatio(),
-                    cam3.getNearClip(),
-                    cam3.getFarClip());
-            cam3.frustumChanged = false;
+            
+            switch(cam.projection) {
+                case ORTHOGRAPHIC:
+                    gl.glOrthof(
+                            -cam.getViewport().getDimensions().x()/200.0f, cam.getViewport().getDimensions().x()/200.0f, 
+                            -cam.getViewport().getDimensions().y()/200.0f, cam.getViewport().getDimensions().y()/200.0f,
+                            -cam.getNearClip(), cam.getFarClip());
+                    cam.frustumChanged = false;
+                    break;
+                    
+                case PERSPECTIVE:
+                    glu.gluPerspective(
+                            cam.getFOV(),
+                            cam.getAspectRatio(),
+                            cam.getNearClip(),
+                            cam.getFarClip());
+                    cam.frustumChanged = false;
 
-            logger.log(Level.INFO, "Cam [{0}, {1}, {2}, {3}]!!", new Object[]{cam3.getFOV(), cam3.getAspectRatio(), cam3.getNearClip(), cam3.getFarClip()});
+                    logger.log(Level.INFO, "Cam [{0}, {1}, {2}, {3}]!!", 
+                            new Object[]{cam.getFOV(), cam.getAspectRatio(), cam.getNearClip(), cam.getFarClip()});
+                    break;
+            }
         }
 
         // camera

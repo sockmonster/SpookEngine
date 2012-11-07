@@ -1,5 +1,7 @@
-package com.spookengine.scenegraph;
+package com.spookengine.scenegraph.collision;
 
+import com.spookengine.scenegraph.Node;
+import com.spookengine.scenegraph.Spatial;
 import com.spookengine.scenegraph.collision.BoundingVolume;
 import java.util.List;
 import java.util.logging.Level;

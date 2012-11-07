@@ -1,4 +1,4 @@
-package com.spookengine.scenegraph.camera;
+package com.spookengine.core.camera;
 
 import com.spookengine.maths.Vec3;
 import com.spookengine.scenegraph.Node;

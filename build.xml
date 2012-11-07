@@ -78,16 +78,19 @@
             basedir="${build.classes.dir}"
             includes="com/spookengine/maths/**" />
             
+        <jar destfile="${dist.dir}/${application.title}-Scenegraph.jar"
+            basedir="${build.classes.dir}"
+            includes="com/spookengine/scenegraph/**" />
+            
         <!-- package android version -->
         <jar destfile="${dist.dir}/${application.title}-Android.jar" 
             basedir="${build.classes.dir}" 
-            excludes="com/spookengine/desktop/**, com/spookengine/maths/**"
-            includes="**" />
+            includes="com/spookengine/core/**, com/spookengine/platform/android/**" />
         
         <!-- package jogl version -->
         <jar destfile="${dist.dir}/${application.title}-JOGL.jar" 
             basedir="${build.classes.dir}" 
-            excludes="com/spookengine/mobile/**, com/spookengine/maths/**"/>
+            includes="com/spookengine/core/**, com/spookengine/platform/desktop/**" />
     </target>
     
     

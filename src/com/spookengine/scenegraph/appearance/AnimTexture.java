@@ -1,7 +1,7 @@
 package com.spookengine.scenegraph.appearance;
 
-import com.spookengine.events.Task;
-import com.spookengine.events.TaskScheduler;
+import com.spookengine.core.events.Task;
+import com.spookengine.core.events.TaskScheduler;
 import java.nio.ByteBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,6 +19,9 @@ public class AnimTexture extends Texture {
 
     private AnimateTask animate;
     private boolean isAnimating;
+    
+    // convenience vars
+    private TaskScheduler scheduler;
 
     public AnimTexture() {
         super();
@@ -91,17 +94,18 @@ public class AnimTexture extends Texture {
         return frames[currFrame];
     }
 
-    public void start() {
+    public void start(TaskScheduler scheduler) {
         if(!isAnimating) {
             isAnimating = true;
-            TaskScheduler.getInstance().schedule(0, animate);
+            this.scheduler = scheduler;
+            this.scheduler.schedule(0, animate);
         }
     }
 
     public void stop() {
         if(isAnimating) {
             isAnimating = false;
-            TaskScheduler.getInstance().unschedule(animate);
+            scheduler.unschedule(animate);
         }
     }
 

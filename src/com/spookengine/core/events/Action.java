@@ -1,4 +1,4 @@
-package com.spookengine.events;
+package com.spookengine.core.events;
 
 import java.util.Queue;
 

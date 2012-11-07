@@ -1,11 +1,13 @@
 package com.spookengine.scenegraph.collision;
 
-import com.spookengine.events.EventHandler;
+import com.spookengine.core.events.EventHandler;
 import com.spookengine.scenegraph.Bound;
 import com.spookengine.scenegraph.Node;
 import com.spookengine.scenegraph.collision.CollisionEvent.EventType;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The CollisionDetector checks the scenegraph's bounding volume hierarchy for
@@ -53,24 +55,26 @@ import java.util.List;
  * @author Oliver Winks
  */
 public class CollisionDetector {
-    private static CollisionDetector instance;
+    private static Map<String, CollisionDetector> instances = new HashMap<String, CollisionDetector>();
 
     private List<CollisionEvent> events;
 
     // convenience vars
     private Bound collider;
     private CollisionEvent evt;
+    private EventHandler eventHandler;
 
     private CollisionDetector() {
         events = new LinkedList<CollisionEvent>();
         evt = null;
     }
 
-    public static CollisionDetector getInstance() {
-        if(instance == null)
-            instance = new CollisionDetector();
+    public static CollisionDetector getInstance(String name) {
+        CollisionDetector detector = instances.get(name);
+        if(detector == null)
+            instances.put(name, detector = new CollisionDetector());
 
-        return instance;
+        return detector;
     }
 
     private boolean hasBounds(Node node) {
@@ -112,7 +116,7 @@ public class CollisionDetector {
                     // fill out collision event and post
                     evt.A = collider;
                     evt.B = (Bound) node;
-                    EventHandler.getInstance().postEvent("collision_evt", evt);
+                    eventHandler.postEvent("collision_evt", evt);
 
                     shouldRecurse = false;
                 }
@@ -157,7 +161,7 @@ public class CollisionDetector {
         }
     }
 
-    public void detect(Node root) {
+    public void detect(Node root, EventHandler eventHandler) {
         collider = null;
         findColliders(root);
 
@@ -170,7 +174,8 @@ public class CollisionDetector {
             } else if(evt.type != EventType.COLLISION_EXIT) {
                 // convert event to collision exit
                 evt.type = EventType.COLLISION_EXIT;
-                EventHandler.getInstance().postEvent("collision_evt", evt);
+                this.eventHandler = eventHandler;
+                this.eventHandler.postEvent("collision_evt", evt);
             } else {
                 // dispose of the event
                 events.remove(i);

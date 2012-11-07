@@ -1,4 +1,4 @@
-package com.spookengine.scenegraph.lights;
+package com.spookengine.core.lights;
 
 /**
  *

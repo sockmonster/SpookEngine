@@ -1,7 +1,8 @@
-package com.spookengine.game2d;
+package com.spookengine.core;
 
-import com.spookengine.scenegraph.Geom;
-import com.spookengine.scenegraph.Trimesh;
+import com.spookengine.core.Geom;
+import com.spookengine.core.Trimesh;
+import com.spookengine.core.events.TaskScheduler;
 import com.spookengine.scenegraph.appearance.AnimTexture;
 import com.spookengine.scenegraph.appearance.Texture;
 import java.util.HashMap;
@@ -22,13 +23,16 @@ public class Sprite extends Geom {
 
     // convenience vars
     private Texture tmpTexture;
+    private TaskScheduler scheduler;
 
-    public Sprite(String name, Texture image) {
+    public Sprite(String name, Texture image, TaskScheduler scheduler) {
         super(name, Trimesh.Quad(image.getWidth(0), image.getHeight(0)));
 
         width = image.getWidth(0);
         height = image.getHeight(0);
         textures = new HashMap<String, Texture>();
+        
+        this.scheduler = scheduler;
 
         logger.log(Level.INFO, "Sprite " + name + " created with size [" + width + ", " + height + "]");
 
@@ -85,7 +89,7 @@ public class Sprite extends Geom {
                  */
                 tmpTexture = getLocalAppearance().removeTexture(0);
                 if(tmpTexture != null && tmpTexture instanceof AnimTexture)
-                    ((AnimTexture) tmpTexture).start();
+                    ((AnimTexture) tmpTexture).start(scheduler);
             }
 
             /*
@@ -95,7 +99,7 @@ public class Sprite extends Geom {
             tmpTexture = textures.get(name);
             getLocalAppearance().addTexture(tmpTexture);
             if(tmpTexture instanceof AnimTexture)
-                ((AnimTexture) tmpTexture).start();
+                ((AnimTexture) tmpTexture).start(scheduler);
         } else {
             logger.log(Level.WARNING, "Animation with name " + name +
                     " doesn't exist!");

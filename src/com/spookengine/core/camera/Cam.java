@@ -1,4 +1,4 @@
-package com.spookengine.scenegraph.camera;
+package com.spookengine.core.camera;
 
 import com.spookengine.maths.FastMath;
 import com.spookengine.maths.Mat4;
@@ -16,6 +16,7 @@ import com.spookengine.scenegraph.collision.BoundingVolume;
  * @author Oliver Winks
  */
 public class Cam {
+    public enum Projection {ORTHOGRAPHIC, PERSPECTIVE}
     
     /** Used by renderer, DO NOT MODIFY! */
     public boolean viewportChanged = true;
@@ -27,6 +28,7 @@ public class Cam {
     protected Viewport viewport;
 
     // camera
+    public Projection projection;
     public Vec3 pos;
     protected Mat4 modelView;
     protected Mat4 modelViewInv;
@@ -54,9 +56,20 @@ public class Cam {
     private Vec3 ntl, ntr, nbl, nbr;
     private Vec3 ftl, ftr, fbl, fbr;
 
-    public Cam() {
-        viewport = new Viewport();
-        viewportChanged = true;
+    public Cam(Projection projection) {
+        this.projection = projection;
+        
+        switch(projection) {
+            case ORTHOGRAPHIC:
+                viewport = new Viewport(true);
+                viewportChanged = true;
+                break;
+                
+            case PERSPECTIVE:
+                viewport = new Viewport();
+                viewportChanged = true;
+                break;
+        }
 
         modelView = new Mat4();
         modelViewInv = new Mat4();
@@ -94,7 +107,8 @@ public class Cam {
         lookAt = new Vec3(0,0,0);
     }
 
-    public Cam(Viewport viewport, float fov, float nearClip, float farClip) {
+    public Cam(Projection projection, Viewport viewport, float fov, float nearClip, float farClip) {
+        this.projection = projection;
         this.viewport = viewport;
         viewportChanged = true;
 

@@ -1,4 +1,4 @@
-package com.spookengine.events;
+package com.spookengine.core.events;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * @author Oliver Winks
  */
 public final class EventHandler implements Cloneable {
-    private static EventHandler instance;
+    private static Map<String, EventHandler> instances = new HashMap<String, EventHandler>();
 
     private Map<String, Queue<Object>> events;
     private Map<String, List<Action>> actions;
@@ -18,11 +18,12 @@ public final class EventHandler implements Cloneable {
         actions = new HashMap<String, List<Action>>();
     }
 
-    public static EventHandler getInstance() {
-        if(instance == null)
-            instance = new EventHandler();
+    public static EventHandler getInstance(String name) {
+        EventHandler eventHandler = instances.get(name);
+        if(eventHandler == null)
+            instances.put(name, eventHandler = new EventHandler());
 
-        return instance;
+        return eventHandler;
     }
 
     /**

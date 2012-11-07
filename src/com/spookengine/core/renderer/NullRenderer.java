@@ -1,9 +1,11 @@
-package com.spookengine.scenegraph.renderer;
+package com.spookengine.core.renderer;
 
-import com.spookengine.scenegraph.App;
+import com.spookengine.core.camera.Cam;
 import com.spookengine.scenegraph.Spatial;
 import com.spookengine.scenegraph.Trfm;
-import com.spookengine.scenegraph.camera.Cam;
+import com.spookengine.scenegraph.appearance.App;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -12,17 +14,18 @@ import java.util.logging.Logger;
  */
 public class NullRenderer extends Renderer {
     private static final Logger logger = Logger.getLogger(NullRenderer.class.getName());
-    private static NullRenderer instance;
+    private static Map<String, NullRenderer> instances = new HashMap<String, NullRenderer>();
     
-    public static NullRenderer getInstance() {
-        if(instance == null) {
-            instance = new NullRenderer();
+    public static NullRenderer getInstance(String name) {
+        NullRenderer renderer = instances.get(name);
+        if(renderer == null) {
+            instances.put(name, renderer = new NullRenderer());
             
-            instance.worldTransform = new Trfm();
-            instance.worldAppearance = new App();
+            renderer.worldTransform = new Trfm();
+            renderer.worldAppearance = new App();
         }
         
-        return instance;
+        return renderer;
     }
     
     private NullRenderer() {

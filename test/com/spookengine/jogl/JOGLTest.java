@@ -1,22 +1,19 @@
 package com.spookengine.jogl;
 
 import com.jogamp.opengl.util.Animator;
-import com.spookengine.events.Task;
-import com.spookengine.events.Task.TaskState;
-import com.spookengine.events.TaskScheduler;
-import com.spookengine.maths.Euler;
+import com.spookengine.core.camera.Cam;
+import com.spookengine.core.camera.CameraMan;
+import com.spookengine.core.events.TaskScheduler;
+import com.spookengine.core.lights.LightBulb;
+import com.spookengine.core.lights.LightMan;
+import com.spookengine.core.renderer.Renderer;
 import com.spookengine.maths.FastMath;
-import com.spookengine.maths.Mat3;
 import com.spookengine.maths.Vec3;
 import com.spookengine.platform.desktop.JOGLRenderer3;
 import com.spookengine.platform.desktop.ObjLoader;
-import com.spookengine.scenegraph.App;
+import com.spookengine.scenegraph.Spatial;
 import com.spookengine.scenegraph.Visual;
-import com.spookengine.scenegraph.camera.Cam;
-import com.spookengine.scenegraph.camera.CameraMan;
-import com.spookengine.scenegraph.lights.LightBulb;
-import com.spookengine.scenegraph.lights.LightMan;
-import com.spookengine.scenegraph.renderer.Renderer;
+import com.spookengine.scenegraph.appearance.App;
 import java.awt.Frame;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -33,7 +30,8 @@ import javax.media.opengl.awt.GLJPanel;
 public class JOGLTest implements GLEventListener {
     
     private Visual root;
-    private Visual testBox, mirrorBox;
+    private Spatial A, B;
+    private Visual C;
     private CameraMan camMan;
     
     public static void main(String[] args) {
@@ -72,78 +70,50 @@ public class JOGLTest implements GLEventListener {
         /* ******** ******** ******** */
         /*           Camera           */
         /* ******** ******** ******** */
-        camMan = new CameraMan("camera", new Cam());
-        camMan.getLocalTransform().tr.setTo(0, 0, 0);
-//        camMan.getLocalTransform().ro.rotateTo(FastMath.toRadians(20), 0, 1, 0);
+        camMan = new CameraMan("camera", new Cam(Cam.Projection.ORTHOGRAPHIC));
+        camMan.getLocalTransform().tr.setTo(0, -10, 0);
         camMan.updateLocalTransform();
         root.attachChild(camMan);
         
         /* ******** ******** ******** */
         /*          LIGHTING          */
         /* ******** ******** ******** */
-        LightBulb sun = new LightBulb(0.8f, 0.8f, 0.8f);
-        sun.hasAmbience = true;
-        LightMan lm = new LightMan("sun", sun);
-        root.attachChild(lm);
-        
-        root.getLocalAppearance().override(App.LIGHTING);
-        root.getLocalAppearance().addLight(sun);
+//        LightBulb sun = new LightBulb(0.8f, 0.8f, 0.8f);
+//        sun.hasAmbience = true;
+//        LightMan lm = new LightMan("sun", sun);
+//        root.attachChild(lm);
+//        
+//        root.getLocalAppearance().override(App.LIGHTING);
+//        root.getLocalAppearance().addLight(sun);
         
         try {
-            testBox = ObjLoader.getInstance().loadModel("/com/spookengine/jogl/", "TestCube.obj");
-            testBox.getLocalTransform().tr.setTo(-1, 10, 0);
-            testBox.getLocalTransform().ro.rotateToYPR(FastMath.toRadians(0), FastMath.toRadians(0), FastMath.toRadians(0));
-            testBox.updateLocalTransform();
+            Spatial A = new Spatial("A");
+            A.getLocalTransform().tr.setTo(0, 0, 0);
+            A.getLocalTransform().ro.rotateToPRY(FastMath.toRadians(45), 0, FastMath.toRadians(45));
+            A.updateLocalTransform();
             
-            // get rotation
-//            Euler euler = new Euler();
-//            testBox.getLocalTransform().ro.getRotationYPR(euler);
-//            System.out.println(euler);
-            Mat3 inverse = new Mat3(testBox.getLocalTransform().ro);
-            inverse.invert();
+            Spatial B = new Spatial("B");
+            B.getLocalTransform().tr.setTo(0, 0, 0);
+            B.getLocalTransform().ro.rotateToPRY(0, 0, 0);
+            B.updateLocalTransform();
+            A.attachChild(B);
             
-            mirrorBox = ObjLoader.getInstance().loadModel("/com/spookengine/jogl/", "TestCube.obj");
-            mirrorBox.getLocalTransform().tr.setTo(1, 10, 0);
-//            mirrorBox.getLocalTransform().ro.rotateToPRY(euler);
-            mirrorBox.getLocalTransform().ro.setTo(inverse);
-            mirrorBox.updateLocalTransform();
+            C = ObjLoader.getInstance().loadModel("/com/spookengine/jogl/", "TestCube.obj");
+            C.getLocalTransform().add(B.getLocalTransform());
+            C.updateLocalTransform();
+            B.attachChild(C);
             
-            root.attachChild(testBox);
-            root.attachChild(mirrorBox);
+            root.attachChild(A);
         } catch(IOException ex) {
             System.err.println("Shit!\n" + ex.getMessage());
         }
-        
-        // Behvaiour
-        TaskScheduler.getInstance().schedule(1, new Task() {
-            float angle;
-            
-            @Override
-            public TaskState perform(float tpf) {
-                angle += tpf;
-                testBox.getLocalTransform().ro.rotateToYPR(angle, angle, 0);
-                testBox.updateLocalTransform();
-                
-                // get rotation
-//                Euler euler = new Euler();
-//                testBox.getLocalTransform().ro.getRotationRPY(euler);
-                Mat3 inverse = new Mat3(testBox.getLocalTransform().ro);
-                inverse.invert();
-//                
-//                mirrorBox.getLocalTransform().ro.rotateToRPY(euler);
-                mirrorBox.getLocalTransform().ro.setTo(inverse);
-                mirrorBox.updateLocalTransform();
-                
-                return TaskState.CONTINUE_RUN;
-            }
-        });
     }
 
     @Override
     public void init(GLAutoDrawable glad) {
         GL2 gl2 = glad.getGL().getGL2();
         Renderer.clearColour = new Vec3(1f, 0.75f, 0.75f);
-        JOGLRenderer3.getInstance(gl2).onSurfaceCreated();
+        JOGLRenderer3.getInstance("Main", gl2).onSurfaceCreated();
         
         // setup scene
         try {
@@ -156,15 +126,15 @@ public class JOGLTest implements GLEventListener {
     @Override
     public void reshape(GLAutoDrawable glad, int x, int y, int width, int height) {
         GL2 gl2 = glad.getGL().getGL2();
-        JOGLRenderer3.getInstance(gl2).onSurfaceChanged(width, height);
+        JOGLRenderer3.getInstance("Main", gl2).onSurfaceChanged(width, height);
     }
     
     @Override
     public void display(GLAutoDrawable glad) {
         GL2 gl2 = glad.getGL().getGL2();
-        JOGLRenderer3.getInstance(gl2).onDrawFrame(root, camMan.getCamera());
+        JOGLRenderer3.getInstance("Main", gl2).onDrawFrame(root, camMan.getCamera());
         
-        TaskScheduler.getInstance().update();
+        TaskScheduler.getInstance("Main").update();
     }
     
     @Override

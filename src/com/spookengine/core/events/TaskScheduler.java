@@ -1,9 +1,6 @@
-package com.spookengine.events;
+package com.spookengine.core.events;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * The TaskScheduler is responsible for calling Tasks. It has an internal timer
@@ -15,7 +12,7 @@ import java.util.TreeMap;
  * @author Oliver Winks
  */
 public final class TaskScheduler implements Cloneable {
-    private static TaskScheduler instance;
+    private static Map<String, TaskScheduler> instances = new HashMap<String, TaskScheduler>();
 
     // timer
     public boolean firstRun;
@@ -44,11 +41,12 @@ public final class TaskScheduler implements Cloneable {
      *
      * @return The TaskScheduler instance.
      */
-    public static TaskScheduler getInstance() {
-        if(instance == null)
-            instance = new TaskScheduler();
+    public static TaskScheduler getInstance(String name) {
+        TaskScheduler scheduler = instances.get(name);
+        if(scheduler == null)
+            instances.put(name, scheduler = new TaskScheduler());
 
-        return instance;
+        return scheduler;
     }
 
 
