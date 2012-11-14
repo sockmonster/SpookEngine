@@ -38,6 +38,46 @@ public abstract class Node implements Cloneable {
     public Node getParent() {
         return parent;
     }
+    
+    /**
+     * Finds and returns the ancestor with the given name by recursively 
+     * checking all of this Node's ancestors. Returns null if no Node can be 
+     * found with the given name.
+     * 
+     * @param name The name of the ancestor to search for and return.
+     * @return The ancestor with the given name, null if no ancestor can be 
+     * found.
+     */
+    public Node findAncestor(String name) {
+        if(parent != null) {
+            if(parent.name.equals(name))
+                return parent;
+            
+            parent.findAncestor(name);
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Finds and returns the closest ancestor of the given type by recursively 
+     * checking all of this Node's ancestors. Returns null if no Node can be 
+     * found with the given name.
+     * 
+     * @param name The name of the ancestor to search for and return.
+     * @return The ancestor with the given name, null if no ancestor can be 
+     * found.
+     */
+    public Node findAncestor(Class clazz) {
+        if(parent != null) {
+            if(parent.getClass().isAssignableFrom(clazz))
+                return parent;
+            
+            parent.findAncestor(clazz);
+        }
+        
+        return null;
+    }
 
     /**
      * Finds and returns the Node with the given name by recursively checking
@@ -60,6 +100,30 @@ public abstract class Node implements Cloneable {
         }
 
         return result;
+    }
+    
+    /**
+     * Finds and returns the closest child of the given type.
+     * 
+     * @param clazz The type of the child to find.
+     * @return The closest child of the given type
+     */
+    public Node findChild(Class clazz) {
+        List<Node> queue = new ArrayList<Node>();
+        
+        // add all children to queue
+        queue.addAll(children);
+        
+        while(!queue.isEmpty()) {
+            Node child = queue.remove(0);
+            
+            if(child.getClass().isAssignableFrom(clazz))
+                return child;
+            
+            queue.addAll(child.getChildren());
+        }
+        
+        return null;
     }
 
     /**

@@ -46,6 +46,92 @@ public class Spatial extends Bound {
     public Trfm getWorldTransform() {
         return worldTransform; // TODO: RETURN A COPY
     }
+    
+    /**
+     * Calculates the world transform using this nodes local transform and it's 
+     * closest Spatial ancestor's world transform.
+     */
+    public void localToWorld() {
+        // find closest Spatial ancestor
+        Node ancestor = findAncestor(Spatial.class);
+        
+        /*
+         * This is the root Spatial node so set it's world transform to it's 
+         * local transform.
+         */
+        if(ancestor == null)
+            ((Spatial) ancestor).worldTransform.setTo(((Spatial) ancestor).localTransform);
+        
+        /*
+         * This is a normal Spatial node so set it's world transform to it's 
+         * parent's world transform and add the local transform.
+         */
+        else {
+            // set world transform to parent world transform
+            worldTransform.setTo(((Spatial) parent).getWorldTransform());
+
+            // add local transform
+            worldTransform.add(localTransform);
+        }
+    }
+    
+    /**
+     * Calculates the world transform using this nodes local transform and it's 
+     * closest Spatial ancestor's world transform. This method recurses up the 
+     * scenegraph from this node.
+     */
+    public void localToWorldTree() {
+        // find closest Spatial ancestor
+        Node ancestor = parent;
+        while(ancestor != null && !(ancestor instanceof Spatial))
+            ancestor = ancestor.parent;
+        
+        /*
+         * This is the root Spatial node so set it's world transform to it's 
+         * local transform.
+         */
+        if(ancestor == null)
+            worldTransform.setTo(localTransform);
+        
+        /*
+         * This is a normal Spatial node so set it's world transform to it's 
+         * parent's world transform and add the local transform.
+         */
+        else {
+            ((Spatial) ancestor).localToWorld();
+            
+            // set world transform to parent world transform
+            worldTransform.setTo(((Spatial) parent).getWorldTransform());
+
+            // add local transform
+            worldTransform.add(localTransform);
+        }
+    }
+    
+    public void worldToLocal() {
+        Node ancestor = findAncestor(Spatial.class);
+        
+        /*
+         * This is the root Spatial node so set it's local transform to it's 
+         * world transform.
+         */
+        if(ancestor == null)
+            localTransform.setTo(worldTransform);
+        
+        /*
+         * This is a normal Spatial node so set it's local transform to the 
+         * difference between it's parent's world transform and it's own world 
+         * transform.
+         */
+        else {
+            // set local transform to world transform
+            localTransform.setTo(worldTransform);
+            
+            // subtract the parent world transform from the local transform
+            localTransform.sub(((Spatial) parent).getWorldTransform());
+            updateLocalTransform();
+        }
+    }
 
     public void updateLocalTransform() {
         localTransform.update();
