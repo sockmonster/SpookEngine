@@ -64,18 +64,20 @@ public class Trfm {
     
     public void add(Trfm local) {
         sc *= local.sc;
-        tr.add(local.tr);
         ro.mult(local.ro);
         
         at.mult(local.at);
+        
+        tr.setTo(at.m[0][3], at.m[1][3], at.m[2][3]);
     }
     
     public void sub(Trfm transform) {
         sc /= transform.sc;
-        tr.sub(transform.tr);
         ro.mult(tmpM3.setTo(transform.ro).invert());
         
         at.mult(tmpM4.setTo(transform.at).invert());
+        
+        tr.setTo(at.m[0][3], at.m[1][3], at.m[2][3]);
     }
 
     public void apply(Vec3 vec) {

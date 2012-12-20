@@ -40,10 +40,10 @@ public class Bound extends Node {
     public void attachChild(Node child) {
         super.attachChild(child);
 
-        // sort this node and it's parent node (if it's a Bound)
-        sort();
-        if(parent != null && parent instanceof Bound)
-            ((Bound) parent).sort();
+//        // sort this node and it's parent node (if it's a Bound)
+//        sort();
+//        if(parent != null && parent instanceof Bound)
+//            ((Bound) parent).sort();
     }
 
     /**
