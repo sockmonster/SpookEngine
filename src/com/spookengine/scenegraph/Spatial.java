@@ -1,5 +1,7 @@
 package com.spookengine.scenegraph;
 
+import java.util.List;
+
 /**
  * The Spatial class extends Bound by providing spatial information to
  * scenegraph objects.
@@ -8,29 +10,14 @@ package com.spookengine.scenegraph;
  */
 public class Spatial extends Bound {
     
-    protected boolean hasTransformed;
     protected Trfm localTransform;
     protected Trfm worldTransform;
 
     public Spatial(String name) {
         super(name);
         
-        hasTransformed = true;
         localTransform = new Trfm();
         worldTransform = new Trfm();
-    }
-    
-    public boolean hasTransformed() {
-        return hasTransformed;
-    }
-    
-    /**
-     * ONLY THE RENDERER SHOULD CALL THIS!
-     * 
-     * @param hasTransformed
-     */
-    public void hasTransformed(boolean hasTransformed) {
-        this.hasTransformed = hasTransformed;
     }
 
     public Trfm getLocalTransform() {
@@ -44,47 +31,20 @@ public class Spatial extends Bound {
      * @return This SpatialNode2's world transformation.
      */
     public Trfm getWorldTransform() {
-        return worldTransform; // TODO: RETURN A COPY
+        return worldTransform;
+    }
+    
+    public void setWorldTransform(Trfm worldTransform) {
+        this.worldTransform.setTo(worldTransform);
     }
     
     /**
-     * Calculates the world transform using this nodes local transform and it's 
-     * closest Spatial ancestor's world transform.
+     * Calculates the world transform using this spatial's local transform and  
+     * it's closest Spatial ancestor's world transform.
      */
     public void localToWorld() {
         // find closest Spatial ancestor
-        Node ancestor = findAncestor(Spatial.class);
-        
-        /*
-         * This is the root Spatial node so set it's world transform to it's 
-         * local transform.
-         */
-        if(ancestor == null)
-            ((Spatial) ancestor).worldTransform.setTo(((Spatial) ancestor).localTransform);
-        
-        /*
-         * This is a normal Spatial node so set it's world transform to it's 
-         * parent's world transform and add the local transform.
-         */
-        else {
-            // set world transform to parent world transform
-            worldTransform.setTo(((Spatial) parent).getWorldTransform());
-
-            // add local transform
-            worldTransform.add(localTransform);
-        }
-    }
-    
-    /**
-     * Calculates the world transform using this nodes local transform and it's 
-     * closest Spatial ancestor's world transform. This method recurses up the 
-     * scenegraph from this node.
-     */
-    public void localToWorldTree() {
-        // find closest Spatial ancestor
-        Node ancestor = parent;
-        while(ancestor != null && !(ancestor instanceof Spatial))
-            ancestor = ancestor.parent;
+        Spatial ancestor = findAncestor(Spatial.class);
         
         /*
          * This is the root Spatial node so set it's world transform to it's 
@@ -98,18 +58,35 @@ public class Spatial extends Bound {
          * parent's world transform and add the local transform.
          */
         else {
-            ((Spatial) ancestor).localToWorld();
-            
-            // set world transform to parent world transform
-            worldTransform.setTo(((Spatial) parent).getWorldTransform());
+            // set world transform to ancestor world transform
+            worldTransform.setTo(ancestor.getWorldTransform());
 
             // add local transform
             worldTransform.add(localTransform);
         }
     }
     
+    /**
+     * Calculates the world transform using this spatial's local transform and  
+     * it's closest Spatial ancestor's world transform. This method recurses 
+     * down the scenegraph from this spatial.
+     */
+    public void localToWorldTree() {
+        localToWorld();
+        
+        // apply localToWorld for all Spatial children
+        List<Spatial> spatialChildren = findChildren(Spatial.class);
+        for(Spatial child : spatialChildren) {
+            child.localToWorld();
+        }
+    }
+    
+    /**
+     * Calculates the local transform using this spatial's world transform and  
+     * it's closest Spatial ancestor's world transform.
+     */
     public void worldToLocal() {
-        Node ancestor = findAncestor(Spatial.class);
+        Spatial ancestor = findAncestor(Spatial.class);
         
         /*
          * This is the root Spatial node so set it's local transform to it's 
@@ -128,49 +105,25 @@ public class Spatial extends Bound {
             localTransform.setTo(worldTransform);
             
             // subtract the parent world transform from the local transform
-            localTransform.sub(((Spatial) parent).getWorldTransform());
-            updateLocalTransform();
+            localTransform.sub(ancestor.getWorldTransform());
         }
-    }
-
-    public void updateLocalTransform() {
-        localTransform.update();
-        hasTransformed = true;
-    }
-    
-    public void updateWorldTransform() {
-        Node ancestor = parent;
-        while(!(ancestor instanceof Spatial)) {
-            if(ancestor == null) {
-                worldTransform.add(localTransform);
-                return;
-            } else {
-                ancestor = parent.parent;
-            }
-        }
-        
-        ((Spatial) ancestor).updateWorldTransform();
-        worldTransform.setTo(((Spatial) ancestor).worldTransform);
-        worldTransform.add(localTransform);
-        
-        hasTransformed = false;
     }
     
     /**
-     * ONLY THE RENDERER SHOULD CALL THIS!
-     * 
-     * Set's this nodes world transform. Calling this method causes the 
-     * hasTransformed flag to be set to true.
-     * 
-     * @param worldTransform 
+     * Calculates the local transform using this spatial's world transform and  
+     * it's closest Spatial ancestor's world transform. This method recurses 
+     * down the scenegraph from this spatial.
      */
-    public void applyTransform(Trfm worldTransform) {
-        this.worldTransform.setTo(worldTransform);
-
-        // set flag
-        hasTransformed = true;
+    public void worldToLocalTree() {
+        worldToLocal();
+        
+        // apply localToWorld for all Spatial children
+        List<Spatial> spatialChildren = findChildren(Spatial.class);
+        for(Spatial child : spatialChildren) {
+            child.worldToLocalTree();
+        }
     }
-
+    
     @Override
     public Node clone() {
         Spatial clone = new Spatial(name);

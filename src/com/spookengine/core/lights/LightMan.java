@@ -52,6 +52,26 @@ public class LightMan extends Spatial {
 
         return null;
     }
+    
+    @Override
+    public void setWorldTransform(Trfm worldTransform) {
+        super.setWorldTransform(worldTransform);
+
+        // set light position
+        light.pos.toZeros();
+        worldTransform.apply(light.pos);
+
+        if(light instanceof SpotLight) {
+            // update direction
+            worldDir = new Vec3( 0, 1, 0);
+            this.worldTransform.apply(worldDir);
+
+            // set light direction
+            ((SpotLight) light).dir.setTo(light.pos);
+            ((SpotLight) light).dir.sub(worldDir);
+            ((SpotLight) light).dir.norm();
+        }
+    }
 
     /**
      * Returns the direction that this SpatialNode is facing.
@@ -75,27 +95,6 @@ public class LightMan extends Spatial {
         // update model bounds
         if(bounds != null)
             bounds.applyTransform(worldTransform);
-    }
-
-    @Override
-    public void applyTransform(Trfm worldTransform) {
-        super.applyTransform(worldTransform);
-
-        // set light position
-        light.pos.toZeros();
-        worldTransform.apply(light.pos);
-
-        if(light instanceof SpotLight) {
-            // update direction
-            worldDir = new Vec3( 0, 1, 0);
-            this.worldTransform.apply(worldDir);
-
-            // set light direction
-            ((SpotLight) light).dir.setTo(light.pos);
-            ((SpotLight) light).dir.sub(worldDir);
-            ((SpotLight) light).dir.norm();
-        }
-
     }
 
     @Override

@@ -68,12 +68,12 @@ public abstract class Node implements Cloneable {
      * @return The ancestor with the given name, null if no ancestor can be 
      * found.
      */
-    public Node findAncestor(Class clazz) {
+    public <T> T findAncestor(Class<T> clazz) {
         if(parent != null) {
-            if(parent.getClass().isAssignableFrom(clazz))
-                return parent;
+            if(clazz.isInstance(parent))
+                return (T) parent;
             
-            parent.findAncestor(clazz);
+            return parent.findAncestor(clazz);
         }
         
         return null;
@@ -108,7 +108,7 @@ public abstract class Node implements Cloneable {
      * @param clazz The type of the child to find.
      * @return The closest child of the given type
      */
-    public Node findChild(Class clazz) {
+    public <T> T findChild(Class<T> clazz) {
         List<Node> queue = new ArrayList<Node>();
         
         // add all children to queue
@@ -117,13 +117,29 @@ public abstract class Node implements Cloneable {
         while(!queue.isEmpty()) {
             Node child = queue.remove(0);
             
-            if(child.getClass().isAssignableFrom(clazz))
-                return child;
+            if(clazz.isInstance(child))
+                return (T) child;
             
             queue.addAll(child.getChildren());
         }
         
         return null;
+    }
+    
+    public <T> List<T> findChildren(Class<T> clazz) {
+        List<T> found = new ArrayList<T>();
+        findChildren(clazz, found);
+        
+        return found;
+    }
+    
+    private <T> void findChildren(Class<T> clazz, List<T> found) {
+        for(Node child : children) {
+            if(clazz.isInstance(child))
+                found.add((T) child);
+            
+            child.findChildren(clazz, found);
+        }
     }
 
     /**
@@ -235,7 +251,7 @@ public abstract class Node implements Cloneable {
         str += node.name + '\n';
         
         for(Node child : node.getChildren())
-            str += toString((Spatial) child, depth + 1);
+            str += toString(child, depth + 1);
             
         return str;
     }

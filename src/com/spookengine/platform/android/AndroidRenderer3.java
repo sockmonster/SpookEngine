@@ -144,7 +144,7 @@ public class AndroidRenderer3 extends Renderer {
 
                 enableApp(currNode.getWorldAppearance());
                 gl.glPushMatrix();
-                    currNode.getWorldTransform().at.toOpenGL(AT);
+                    currNode.getWorldTransform().getAffineTransform().toOpenGL(AT);
                     gl.glMultMatrixf(AT, 0);
 
                     render(geom);
@@ -175,7 +175,7 @@ public class AndroidRenderer3 extends Renderer {
                          * because OpenGL matices are the transpose of pure3d matrices,
                          * therefore rotation matrices are reversed!
                          */
-                        currNode.getWorldTransform().at.toOpenGL(AT);
+                        currNode.getWorldTransform().getAffineTransform().toOpenGL(AT);
                         gl.glMultMatrixf(AT, 0);
 
                         render(geom);

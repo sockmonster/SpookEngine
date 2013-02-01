@@ -85,7 +85,7 @@ public class Geom extends Visual {
     @Override
     public void updateBounds(List<BoundingVolume> childBounds, int from, int to) {
         // update model bounds
-        if(bounds != null && hasTransformed)
+        if(bounds != null)
             bounds.applyTransform(worldTransform);
     }
 

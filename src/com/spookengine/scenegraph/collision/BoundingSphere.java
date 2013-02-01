@@ -142,7 +142,7 @@ public class BoundingSphere extends BoundingVolume {
         worldPos.setTo(localPos);
         worldTransform.apply(worldPos);
 
-        radius = normalRadius*worldTransform.sc;
+        radius = normalRadius*worldTransform.getScale();
         localExtent.setTo(radius, radius, radius);
         worldExtent.setTo(radius, radius, radius);
     }

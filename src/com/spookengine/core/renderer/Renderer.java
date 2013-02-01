@@ -1,9 +1,9 @@
 package com.spookengine.core.renderer;
 
-import com.spookengine.scenegraph.appearance.App;
+import com.spookengine.core.camera.Cam;
 import com.spookengine.maths.Vec3;
 import com.spookengine.scenegraph.*;
-import com.spookengine.core.camera.Cam;
+import com.spookengine.scenegraph.appearance.App;
 import com.spookengine.scenegraph.collision.BoundingVolume;
 import java.util.Stack;
 import java.util.logging.Level;
@@ -55,30 +55,21 @@ public abstract class Renderer {
             /* ******** ******** ******** */
             /*   UPDATE WORLD TRANSFORM   */
             /* ******** ******** ******** */
-            boolean isLeaf;
             boolean spatialObjectPushed = false;
             boolean visualObjectPushed = false;
             if(node instanceof Spatial) {
                 logger.log(Level.FINEST, "Updating {0}", node.name);
                 Spatial spatial = (Spatial) node; // TODO: CHECK IF THIS CREATES GARBAGE!
-                isLeaf = spatial.isLeaf();
-
-                // apply the transform on this spatial object?
-                boolean localTransformModified = spatial.hasTransformed();
-                boolean worldTransformModified = spatialStackEmpty ? false : spatialStack.peek().hasTransformed();
-                if(worldTransformModified || localTransformModified) {
-                    logger.log(Level.FINEST, "\n{0}", worldTransform.at);
-                    logger.log(Level.FINEST, "****\n{0}", spatial.getLocalTransform().at);
-                    
-                    // push world transform
-                    worldTransform.add(spatial.getLocalTransform());
-                    
-                    logger.log(Level.FINEST, "====\n{0}", worldTransform.at);
-
-                    spatial.applyTransform(worldTransform);
-                } else if(!isLeaf) {
+                
+                // push world transform
+                worldTransform.add(spatial.getLocalTransform());
+                
+                // apply transform on this spatial
+                spatial.setWorldTransform(worldTransform);
+                
+                if(!spatial.isLeaf())
                     worldTransform.setTo(spatial.getWorldTransform());
-                }
+                
                 spatialObjectPushed = true;
                 spatialStackEmpty = false;
                 spatialStack.push(spatial);
@@ -88,21 +79,16 @@ public abstract class Renderer {
                 /* ******** ******** ******** */
                 if(node instanceof Visual) {
                     Visual visual = (Visual) node; // TODO: CHECK IF THIS CREATES GARBAGE!
-
+                    
                     // push world appearance
-    //                worldAppearance.add(visual.getLocalAppearance());
+                    worldAppearance.add(visual.getLocalAppearance());
 
-                    boolean localVisualStateChanged = visual.hasVisualStateChanged();
-                    boolean worldVisualStateChanged = visualStackEmpty ? false : visualStack.peek().hasVisualStateChanged();
-                    if(worldVisualStateChanged || localVisualStateChanged) {
-                        // push world appearance
-                        worldAppearance.add(visual.getLocalAppearance());
-
-                        // apply the world appearance on this visual object
-                        visual.applyAppearance(worldAppearance);
-                    } else if(!isLeaf) {
+                    // apply the world appearance on this visual
+                    visual.applyAppearance(worldAppearance);
+                    
+                    if(!spatial.isLeaf())
                         worldAppearance.setTo(visual.getWorldAppearance());
-                    }
+                    
                     visualObjectPushed = true;
                     visualStackEmpty = false;
                     visualStack.push(visual);
@@ -166,11 +152,8 @@ public abstract class Renderer {
 
             // render
             if(node instanceof Spatial) {
-                ((Spatial) node).hasTransformed(false);
-
                 if(node instanceof Visual && !((Visual) node).isHidden) {
                     Visual visual = (Visual) node; // TODO: CHECK IF THIS CREATES GARBAGE!
-                    visual.hasVisualStateChanged(false);
 
                     if(isVisible) {
                         // defer rendering?

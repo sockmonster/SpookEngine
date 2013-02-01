@@ -53,6 +53,39 @@ public class CameraMan extends Spatial {
 
         return null;
     }
+    
+    @Override
+    public void setWorldTransform(Trfm worldTransform) {
+        super.setWorldTransform(worldTransform);
+
+        // calculate camera pos
+        cam.pos.toZeros();
+        this.worldTransform.apply(cam.pos);
+        
+        if(!fixLookAt) {
+            worldUp.setTo(0,0,1);
+            worldLookAt.setTo(0,1,0);
+            
+            // calculate up vector
+            this.worldTransform.apply(worldUp);
+            worldUp.sub(cam.pos).norm(); // testing
+
+            // calculate lookat vector
+            this.worldTransform.apply(worldLookAt);
+        } else {
+            // TODO: CALCULATE UP VECTOR!
+        }
+
+        // set look at direction and up direction
+        cam.up.setTo(worldUp);
+        cam.lookAt.setTo(worldLookAt);
+
+        // calculate direction
+        worldDir.setTo(worldLookAt).sub(cam.pos);
+
+        // recalculate frustum
+        cam.update();
+    }
 
     public Vec3 getWorldLookAt() {
         return worldLookAt;
@@ -93,39 +126,6 @@ public class CameraMan extends Spatial {
         // update model bounds
         if(bounds != null)
             bounds.applyTransform(worldTransform);
-    }
-
-    @Override
-    public void applyTransform(Trfm worldTransform) {
-        super.applyTransform(worldTransform);
-
-        // calculate camera pos
-        cam.pos.toZeros();
-        this.worldTransform.apply(cam.pos);
-        
-        if(!fixLookAt) {
-            worldUp.setTo(0,0,1);
-            worldLookAt.setTo(0,1,0);
-            
-            // calculate up vector
-            this.worldTransform.apply(worldUp);
-            worldUp.sub(cam.pos).norm(); // testing
-
-            // calculate lookat vector
-            this.worldTransform.apply(worldLookAt);
-        } else {
-            // TODO: CALCULATE UP VECTOR!
-        }
-
-        // set look at direction and up direction
-        cam.up.setTo(worldUp);
-        cam.lookAt.setTo(worldLookAt);
-
-        // calculate direction
-        worldDir.setTo(worldLookAt).sub(cam.pos);
-
-        // recalculate frustum
-        cam.update();
     }
 
     @Override

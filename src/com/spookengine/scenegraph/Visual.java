@@ -7,8 +7,7 @@ import com.spookengine.scenegraph.appearance.App;
  * @author Oliver Winks
  */
 public class Visual extends Spatial {
-
-    protected boolean hasVisualStateChanged;
+    
     protected App worldAppearance;
     protected App localAppearance;
     public boolean isHidden;
@@ -17,22 +16,8 @@ public class Visual extends Spatial {
     public Visual(String name) {
         super(name);
         
-        hasVisualStateChanged = true;
         localAppearance = new App();
         worldAppearance = new App();
-    }
-    
-    public boolean hasVisualStateChanged() {
-        return hasVisualStateChanged;
-    }
-    
-    /**
-     * ONLY THE RENDERER SHOULD CALL THIS!
-     * 
-     * @param hasTransformed
-     */
-    public void hasVisualStateChanged(boolean hasVisualStateChanged) {
-        this.hasVisualStateChanged = hasVisualStateChanged;
     }
 
     /**
@@ -44,7 +29,6 @@ public class Visual extends Spatial {
      * @return This VisualNode's local Appearance.
      */
     public App getLocalAppearance() {
-        hasVisualStateChanged = true;
         return localAppearance;
     }
 
@@ -76,7 +60,6 @@ public class Visual extends Spatial {
      */
     public void applyAppearance(App worldAppearance) {
         this.worldAppearance.setTo(worldAppearance);
-        this.hasVisualStateChanged = true;
     }
 
     @Override

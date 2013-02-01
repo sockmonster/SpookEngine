@@ -3,9 +3,8 @@ package com.spookengine.jogl;
 import com.jogamp.opengl.util.Animator;
 import com.spookengine.core.camera.Cam;
 import com.spookengine.core.camera.CameraMan;
+import com.spookengine.core.events.Task;
 import com.spookengine.core.events.TaskScheduler;
-import com.spookengine.core.lights.LightBulb;
-import com.spookengine.core.lights.LightMan;
 import com.spookengine.core.renderer.Renderer;
 import com.spookengine.maths.FastMath;
 import com.spookengine.maths.Vec3;
@@ -13,7 +12,6 @@ import com.spookengine.platform.desktop.JOGLRenderer3;
 import com.spookengine.platform.desktop.ObjLoader;
 import com.spookengine.scenegraph.Spatial;
 import com.spookengine.scenegraph.Visual;
-import com.spookengine.scenegraph.appearance.App;
 import java.awt.Frame;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -70,9 +68,9 @@ public class JOGLTest implements GLEventListener {
         /* ******** ******** ******** */
         /*           Camera           */
         /* ******** ******** ******** */
-        camMan = new CameraMan("camera", new Cam(Cam.Projection.ORTHOGRAPHIC));
-        camMan.getLocalTransform().tr.setTo(0, -10, 0);
-        camMan.updateLocalTransform();
+        camMan = new CameraMan("camera", new Cam(Cam.Projection.PERSPECTIVE));
+        camMan.getLocalTransform().moveTo(0, -10, 0);
+        camMan.getLocalTransform().update();
         root.attachChild(camMan);
         
         /* ******** ******** ******** */
@@ -88,25 +86,30 @@ public class JOGLTest implements GLEventListener {
         
         try {
             Spatial A = new Spatial("A");
-            A.getLocalTransform().tr.setTo(0, 0, 0);
-            A.getLocalTransform().ro.rotateToPRY(FastMath.toRadians(45), 0, FastMath.toRadians(45));
-            A.updateLocalTransform();
+            A.getLocalTransform().moveTo(0, 0, 0);
+            A.getLocalTransform().rotateToPRY(FastMath.toRadians(45), 0, FastMath.toRadians(45));
+            A.getLocalTransform().update();
             
             Spatial B = new Spatial("B");
-            B.getLocalTransform().tr.setTo(0, 0, 0);
-            B.getLocalTransform().ro.rotateToPRY(0, 0, 0);
-            B.updateLocalTransform();
+            B.getLocalTransform().moveTo(0, 0, 0);
+            B.getLocalTransform().rotateToPRY(0, 0, 0);
+            B.getLocalTransform().update();
             A.attachChild(B);
             
             C = ObjLoader.getInstance().loadModel("/com/spookengine/jogl/", "TestCube.obj");
             C.getLocalTransform().add(B.getLocalTransform());
-            C.updateLocalTransform();
+            C.getLocalTransform().update();
             B.attachChild(C);
             
             root.attachChild(A);
         } catch(IOException ex) {
             System.err.println("Shit!\n" + ex.getMessage());
         }
+        
+        /* ******** ******** ******** */
+        /*           TASKS            */
+        /* ******** ******** ******** */
+        TaskScheduler.getInstance("Main").schedule(1, new RotateTask(C));
     }
 
     @Override
@@ -141,4 +144,20 @@ public class JOGLTest implements GLEventListener {
     public void dispose(GLAutoDrawable glad) {
     }
     
+    public class RotateTask extends Task {
+        private Spatial obj;
+        private float angle;
+        
+        public RotateTask(Spatial obj) {
+            this.obj = obj;
+        }
+        
+        @Override
+        public TaskState perform(float tpf) {
+            obj.getLocalTransform().rotateTo(angle += 0.01f, 1, 0, 0).moveTo((float) Math.sin(angle)*2, (float) Math.cos(angle)*2, 0).update();
+            
+            return TaskState.CONTINUE_RUN;
+        }
+        
+    }
 }

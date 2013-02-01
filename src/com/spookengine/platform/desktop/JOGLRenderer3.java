@@ -11,9 +11,9 @@ import com.spookengine.core.renderer.Renderer;
 import com.spookengine.scenegraph.Spatial;
 import com.spookengine.scenegraph.Trfm;
 import com.spookengine.scenegraph.Visual;
+import com.spookengine.scenegraph.appearance.*;
 import static com.spookengine.scenegraph.appearance.App.*;
 import com.spookengine.scenegraph.appearance.PolyAtt.CullFace;
-import com.spookengine.scenegraph.appearance.*;
 import java.nio.FloatBuffer;
 import java.util.HashMap;
 import java.util.List;
@@ -168,7 +168,7 @@ public class JOGLRenderer3 extends Renderer {
 
                 enableApp(currNode.getWorldAppearance());
                 gl.glPushMatrix();
-                    currNode.getWorldTransform().at.toOpenGL(AT);
+                    currNode.getWorldTransform().getAffineTransform().toOpenGL(AT);
                     gl.glMultMatrixf(AT, 0);
                     
                     gl.glEnable(GL2.GL_NORMALIZE);
@@ -201,7 +201,7 @@ public class JOGLRenderer3 extends Renderer {
                          * because OpenGL matices are the transpose of pure3d matrices,
                          * therefore rotation matrices are reversed!
                          */
-                        currNode.getWorldTransform().at.toOpenGL(AT);
+                        currNode.getWorldTransform().getAffineTransform().toOpenGL(AT);
                         gl.glMultMatrixf(AT, 0);
 
                         render(geom);
